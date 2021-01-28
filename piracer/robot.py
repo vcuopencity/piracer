@@ -20,9 +20,9 @@ _PCA9685_MOTOR_ADDRESS = 0x60
 _QUEUE_DEPTH = 10
 
 
-class Platform(Node):
+class Robot(Node):
     def __init__(self):
-        super(Platform, self).__init__('platform')
+        super(Robot, self).__init__('robot')
 
         # Servo control
         servo_kit = adafruit_servokit.ServoKit(channels=16, address=_PCA9685_SERVO_ADDRESS)
@@ -87,7 +87,7 @@ class Platform(Node):
 
 def main():
     rclpy.init()
-    platform = Platform()
+    platform = Robot()
     rclpy.spin(platform)
 
     platform.destroy_node()
