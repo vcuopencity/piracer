@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'platform = piracer.platform:main',
+            'robot = piracer.robot:main',
         ],
     },
 )
