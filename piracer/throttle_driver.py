@@ -42,7 +42,9 @@ class ThrottleDriver(Node):
         self.motor.throttle = 0.0
 
     def _msg_cb(self, msg: Float64):
-        self.motor.throttle = msg.data
+        self.motor.throttle = min(self.get_parameter('max_throttle').value,
+                                  max(self.get_parameter('min_throttle').value,
+                                      msg.data))
 
 
 def main():
