@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'steering_driver = piracer.steering_driver:main',
             'throttle_driver = piracer.throttle_driver:main',
+            'display_driver = piracer.display_driver:main',
         ],
     },
 )

@@ -16,4 +16,10 @@ def generate_launch_description():
             executable='throttle_driver',
             name='throttle_driver'
         ),
+        Node(
+            package='piracer',
+            namespace='car1',
+            executable='display_driver',
+            name='display_driver'
+        )
     ])
