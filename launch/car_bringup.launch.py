@@ -21,5 +21,11 @@ def generate_launch_description():
             namespace='car1',
             executable='display_driver',
             name='display_driver'
+        ),
+        Node(
+            package='piracer',
+            namespace='car1',
+            executable='power_monitor_driver',
+            name='power_monitor_driver'
         )
     ])

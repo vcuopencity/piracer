@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Float64
+from piracer_msgs.msg import SystemPower
 
 import board
 import busio
@@ -15,20 +16,23 @@ class PowerMonitorDriver(Node):
         i2c = busio.I2C(board.SCL, board.SDA)
         self._ina = INA219(i2c, addr=0x41)
 
-        self.power_pub = self.create_publisher(msg_type=Float64,
+        self.power_pub = self.create_publisher(msg_type=SystemPower,
                                                topic='current',
                                                qos_profile=10)
 
         self.create_timer(timer_period_sec=1, callback=self._timer_cb)
 
     def _timer_cb(self):
-        msg = Float64()
-        msg.data = self._ina.current
+        msg = SystemPower()
+
+        msg.voltage = self._ina.bus_voltage + self._ina.shunt_voltage
+        msg.current = self._ina.current
+        msg.power = self._ina.power
 
         self.power_pub.publish(msg)
 
 
-def _main():
+def main():
     rclpy.init()
     node = PowerMonitorDriver()
     rclpy.spin(node)
@@ -38,4 +42,4 @@ def _main():
 
 
 if __name__ == '__main__':
-    _main()
+    main()
