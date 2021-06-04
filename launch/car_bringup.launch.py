@@ -27,5 +27,11 @@ def generate_launch_description():
             namespace='car1',
             executable='power_monitor_driver',
             name='power_monitor_driver'
+        ),
+        Node(
+            package='v4l2_camera',
+            namespace='car1',
+            executable='v4l2_camera_node',
+            name='picamera_driver'
         )
     ])
