@@ -14,7 +14,7 @@ class PowerMonitorDriver(Node):
         super(PowerMonitorDriver, self).__init__('power_monitor_driver')
 
         i2c = busio.I2C(board.SCL, board.SDA)
-        self._ina = INA219(i2c, addr=0x70)
+        self._ina = INA219(i2c, addr=0x41)
 
         self.power_pub = self.create_publisher(msg_type=SystemPower,
                                                topic='current',
