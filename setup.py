@@ -28,6 +28,7 @@ setup(
             'throttle_driver = piracer.throttle_driver:main',
             'display_driver = piracer.display_driver:main',
             'power_monitor_driver = piracer.power_monitor_driver:main',
+            'teleop_controller = piracer.teleop_controller:main',
         ],
     },
 )

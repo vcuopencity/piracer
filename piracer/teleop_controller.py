@@ -15,11 +15,11 @@ class TeleopController(Node):
                                  qos_profile=10)
 
         self.throttle_pub = self.create_publisher(msg_type=Float64,
-                                                  topic='car1/throttle',
+                                                  topic='throttle',
                                                   qos_profile=10)
 
         self.angle_pub = self.create_publisher(msg_type=Float64,
-                                               topic='car1/angle',
+                                               topic='angle',
                                                qos_profile=10)
 
     def _msg_cb(self, msg: Joy):

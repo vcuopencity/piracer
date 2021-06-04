@@ -33,5 +33,11 @@ def generate_launch_description():
             namespace='car1',
             executable='v4l2_camera_node',
             name='picamera_driver'
+        ),
+        Node(
+            package='piracer',
+            namespace='car1',
+            executable='teleop_controller',
+            name='teleop_controller'
         )
     ])
