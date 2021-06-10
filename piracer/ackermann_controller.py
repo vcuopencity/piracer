@@ -1,13 +1,19 @@
 import rclpy
 from rclpy.node import Node
 
+from rclpy.exceptions import ParameterNotDeclaredException
+from rcl_interfaces.msg import ParameterType
+
 from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float64
 
 
-class AckermannDriver(Node):
+class AckermannController(Node):
     def __init__(self):
         super().__init__('ackermann_driver')
+
+        self.declare_parameter('ros_input_bridge','ros_pub_top')
+        topic = self.get_parameter('ros_input_bridge').get_parameter_value().string_value
 
         #  initialzing the necessary subscriber and publishers
         self.ackermann_sub = self.create_subscription(
@@ -45,7 +51,7 @@ class AckermannDriver(Node):
 
 def main():
     rclpy.init()
-    node = AckermannDriver()
+    node = AckermannController()
     rclpy.spin(node)
 
     node.destroy_node()

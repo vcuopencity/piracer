@@ -37,7 +37,7 @@ def generate_launch_description():
         Node(
             package='piracer',
             namespace='car1',
-            executable='ackermann_driver',
-            name='ackermann_driver'
+            executable='ackermann_controller',
+            name='ackermann_controller'
         )
     ])
