@@ -38,6 +38,10 @@ def generate_launch_description():
             package='piracer',
             namespace='car1',
             executable='ackermann_controller',
-            name='ackermann_controller'
+            name='ackermann_controller',
+            parameters=[
+                {'bridge_input_topic': 'ros_pub_top'},
+                {'bridge_output_topic': 'ros_sub_top'}
+            ]
         )
     ])

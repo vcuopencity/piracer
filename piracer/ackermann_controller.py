@@ -12,17 +12,27 @@ class AckermannController(Node):
     def __init__(self):
         super().__init__('ackermann_driver')
 
-        self.declare_parameter('ros_input_bridge','ros_pub_top')
-        topic = self.get_parameter('ros_input_bridge').get_parameter_value().string_value
+        # Initializing parameters
+        self.declare_parameter('bridge_input_topic','ros_pub_top')
+        input_topic = self.get_parameter('bridge_input_topic').get_parameter_value().string_value
 
-        #  initialzing the necessary subscriber and publishers
+        self.declare_parameter('bridge_output_topic','ros_sub_top')
+        output_topic = self.get_parameter('bridge_output_topic').get_parameter_value().string_value
+
+        #  Bridge sub / pub
         self.ackermann_sub = self.create_subscription(
             msg_type = AckermannDrive, 
-            topic = '/ros_pub_top', 
+            topic = '/'+ input_topic , 
             callback = self.ackermann_callback,
             qos_profile = 10,
         )
+        self.ackermann_pub = self.create_publisher(
+            msg_type = AckermannDrive, 
+            topic = '/'+ output_topic , 
+            qos_profile = 10,
+        )
 
+        # Publishers for robot control
         self.steering_pub = self.create_publisher(
             msg_type = Float64,
             topic = 'angle',
@@ -47,6 +57,8 @@ class AckermannController(Node):
 
         self.throttle_pub.publish(throttle_msg)         # Publishing the 
         self.steering_pub.publish(steer_msg)            # actual messages
+
+        self.ackermann_pub.publish(msg)
 
 
 def main():
