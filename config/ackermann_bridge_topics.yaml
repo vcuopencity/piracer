@@ -1,0 +1,7 @@
+# | |  Must modify the node name to match the car name!
+# V V  It won't error if they don't match, it just won't load.
+car1/ackermann_controller:
+  ros__parameters:
+    bridge_input_topic: 'car1/cmd/in'
+    bridge_output_topic: 'car1/cmd/out'
+    
