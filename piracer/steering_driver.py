@@ -16,19 +16,22 @@ class SteeringDriver(Node):
     def __init__(self):
         super(SteeringDriver, self).__init__('steering_driver')
 
-        fp_range = FloatingPointRange(from_value=-45.0,
-                                      to_value=45.0,
+        min_value = -75.0       # Determined by finding max value servos would
+        max_value = 75.0        # reach without making weird noises
+
+        fp_range = FloatingPointRange(from_value=min_value,
+                                      to_value=max_value,
                                       step=0.0)
         desc = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE,
                                    description='Minimum steering angle',
                                    floating_point_range=[fp_range])
-        self._min_angle = self.declare_parameter('min_angle', value=-45.0,
+        self._min_angle = self.declare_parameter('min_angle', value=min_value,
                                                  descriptor=desc)
 
         desc = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE,
                                    description='Maximum steering angle',
                                    floating_point_range=[fp_range])
-        self._max_angle = self.declare_parameter('max_angle', value=45.0,
+        self._max_angle = self.declare_parameter('max_angle', value=max_value,
                                                  descriptor=desc)
 
         self._subscriber = self.create_subscription(msg_type=Float64,

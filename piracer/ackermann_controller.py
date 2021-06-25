@@ -22,13 +22,13 @@ class AckermannController(Node):
         #  Bridge sub / pub
         self.ackermann_sub = self.create_subscription(
             msg_type = AckermannDrive, 
-            topic = '/'+ input_topic , 
+            topic = input_topic , 
             callback = self.ackermann_callback,
             qos_profile = 10,
         )
         self.ackermann_pub = self.create_publisher(
             msg_type = AckermannDrive, 
-            topic = '/'+ output_topic , 
+            topic = output_topic , 
             qos_profile = 10,
         )
 
