@@ -1,10 +1,8 @@
+from ackermann_msgs.msg import AckermannDrive
+
 import rclpy
 from rclpy.node import Node
 
-from rclpy.exceptions import ParameterNotDeclaredException
-from rcl_interfaces.msg import ParameterType
-
-from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float64
 
 
@@ -21,14 +19,14 @@ class AckermannController(Node):
 
         #  Bridge sub / pub
         self.ackermann_sub = self.create_subscription(
-            msg_type = AckermannDrive, 
-            topic = input_topic , 
+            msg_type = AckermannDrive,
+            topic = input_topic ,
             callback = self.ackermann_callback,
             qos_profile = 10,
         )
         self.ackermann_pub = self.create_publisher(
-            msg_type = AckermannDrive, 
-            topic = output_topic , 
+            msg_type = AckermannDrive,
+            topic = output_topic ,
             qos_profile = 10,
         )
 
@@ -44,24 +42,30 @@ class AckermannController(Node):
             qos_profile = 10,
         )
 
-    # What to do when a message is recieved
     def ackermann_callback(self, msg):
-        self.get_logger().debug('RECEIVED | angle: %f angle_vel: %f speed: %f accel: %f jerk: %f' 
-        % (msg.steering_angle, msg.steering_angle_velocity, msg.speed, msg.acceleration, msg.jerk))
-        
+        """Publish speed and steering angle to their appropriate topics."""
+        self.get_logger().debug(
+            f'RECEIVED | angle: {msg.steering_angle:.2f} '
+            f'angle_vel: {msg.steering_angle_velocity:.2f} '
+            f'speed: {msg.speed:.2f} '
+            f'accel: {msg.acceleration:.2f} '
+            f'jerk: {msg.jerk:.2f} '
+        )
+
         throttle_msg = Float64()
         throttle_msg.data = msg.speed
 
         steer_msg = Float64()
         steer_msg.data = msg.steering_angle
 
-        self.throttle_pub.publish(throttle_msg)         # Publishing the 
-        self.steering_pub.publish(steer_msg)            # actual messages
+        self.throttle_pub.publish(throttle_msg)
+        self.steering_pub.publish(steer_msg)
 
         self.ackermann_pub.publish(msg)
 
 
 def main():
+    """Boilerplate ROS node spinup."""
     rclpy.init()
     node = AckermannController()
     rclpy.spin(node)

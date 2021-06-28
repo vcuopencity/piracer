@@ -1,5 +1,3 @@
-# | |  Must modify the node name to match the car name!
-# V V  It won't error if they don't match, it just won't load.
 /**:
   ros__parameters:
     bridge_input_topic: 'cmd/in'

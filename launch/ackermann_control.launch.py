@@ -1,20 +1,27 @@
-from launch import LaunchDescription
-from launch_ros.actions import Node
+# Standard library imports
+from os.path import join
 
+# Third-party imports
+from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import Node
+from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
-import os
-from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
-    bridge_topics = os.path.join(get_package_share_directory('piracer'),'config','ackermann_bridge_topics.yaml')
+    bridge_topics = join(get_package_share_directory('piracer'),
+                         'config','ackermann_bridge_topics.yaml')
+    steering_config = join(get_package_share_directory('piracer'),
+                           'config','steering_config.yaml')
     return LaunchDescription([
-        DeclareLaunchArgument('car_name', default_value='car1', description='Sets the namespace for this car.'),
+        DeclareLaunchArgument('car_name', default_value='car1', 
+                              description='Sets the namespace for this car.'),
         Node(
             package='piracer',
             namespace=[LaunchConfiguration('car_name')],
             executable='steering_driver',
-            name='steering_driver'
+            name='steering_driver',
+            parameters=[steering_config]
         ),
         Node(
             package='piracer',
@@ -46,9 +53,5 @@ def generate_launch_description():
             executable='ackermann_controller',
             name='ackermann_controller',
             parameters=[bridge_topics]
-            # parameters=[
-            #     {'bridge_input_topic': 'ros_pub_top'},
-            #     {'bridge_output_topic': 'ros_sub_top'}
-            # ]
         )
     ])

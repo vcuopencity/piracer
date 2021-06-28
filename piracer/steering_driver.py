@@ -2,7 +2,6 @@ import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from rcl_interfaces.msg import ParameterType
-from rcl_interfaces.msg import FloatingPointRange
 
 from std_msgs.msg import Float64
 
@@ -16,22 +15,14 @@ class SteeringDriver(Node):
     def __init__(self):
         super(SteeringDriver, self).__init__('steering_driver')
 
-        min_value = -75.0       # Determined by finding max value servos would
-        max_value = 75.0        # reach without making weird noises
-
-        fp_range = FloatingPointRange(from_value=min_value,
-                                      to_value=max_value,
-                                      step=0.0)
         desc = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE,
-                                   description='Minimum steering angle',
-                                   floating_point_range=[fp_range])
-        self._min_angle = self.declare_parameter('min_angle', value=min_value,
+                                   description='Minimum steering angle')
+        self._min_angle = self.declare_parameter('min_angle', value=0.0,
                                                  descriptor=desc)
 
         desc = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE,
-                                   description='Maximum steering angle',
-                                   floating_point_range=[fp_range])
-        self._max_angle = self.declare_parameter('max_angle', value=max_value,
+                                   description='Maximum steering angle')
+        self._max_angle = self.declare_parameter('max_angle', value=0.0,
                                                  descriptor=desc)
 
         self._subscriber = self.create_subscription(msg_type=Float64,
