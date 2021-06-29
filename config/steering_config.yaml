@@ -1,5 +1,4 @@
 /**:
-  steering_driver:
-    ros__parameters:
-      min_angle: -75.0
-      max_angle: 75.0
+  ros__parameters:
+    min_angle: -75.0
+    max_angle: 75.0
