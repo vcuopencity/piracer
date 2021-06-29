@@ -14,6 +14,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name), glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -29,6 +30,7 @@ setup(
             'display_driver = piracer.display_driver:main',
             'power_monitor_driver = piracer.power_monitor_driver:main',
             'teleop_controller = piracer.teleop_controller:main',
+            'ackermann_controller = piracer.ackermann_controller:main',
         ],
     },
 )
