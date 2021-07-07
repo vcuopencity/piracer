@@ -11,35 +11,35 @@ class AckermannController(Node):
         super().__init__('ackermann_driver')
 
         # Initializing parameters
-        self.declare_parameter('bridge_input_topic','ros_pub_top')
+        self.declare_parameter('bridge_input_topic', 'ros_pub_top')
         input_topic = self.get_parameter('bridge_input_topic').get_parameter_value().string_value
 
-        self.declare_parameter('bridge_output_topic','ros_sub_top')
+        self.declare_parameter('bridge_output_topic', 'ros_sub_top')
         output_topic = self.get_parameter('bridge_output_topic').get_parameter_value().string_value
 
         #  Bridge sub / pub
         self.ackermann_sub = self.create_subscription(
-            msg_type = AckermannDrive,
-            topic = input_topic ,
-            callback = self.ackermann_callback,
-            qos_profile = 10,
+            msg_type=AckermannDrive,
+            topic=input_topic,
+            callback=self.ackermann_callback,
+            qos_profile=10,
         )
         self.ackermann_pub = self.create_publisher(
-            msg_type = AckermannDrive,
-            topic = output_topic ,
-            qos_profile = 10,
+            msg_type=AckermannDrive,
+            topic=output_topic,
+            qos_profile=10,
         )
 
         # Publishers for robot control
         self.steering_pub = self.create_publisher(
-            msg_type = Float64,
-            topic = 'angle',
-            qos_profile = 10,
+            msg_type=Float64,
+            topic='angle',
+            qos_profile=10,
         )
         self.throttle_pub = self.create_publisher(
-            msg_type = Float64,
-            topic = 'throttle',
-            qos_profile = 10,
+            msg_type=Float64,
+            topic='throttle',
+            qos_profile=10,
         )
 
     def ackermann_callback(self, msg):
