@@ -3,6 +3,8 @@ from command_msgs.msg import Command
 import rclpy
 from rclpy.node import Node
 
+from transitions import Machine
+
 
 class AutonomyManager(Node):
     def __init__(self):
@@ -28,14 +30,42 @@ class AutonomyManager(Node):
             qos_profile=10,
         )
 
+        # State machine initialization
+        states = ['auto', 'direct']
+        transitions = [
+            {'trigger': 'direct', 'source': '*', 'dest': 'direct'},
+            {'trigger': 'auto', 'source': '*', 'dest': 'auto'}
+        ]
+        machine = Machine(model=self, states=states, transitions=transitions, initial='auto')
+
+    # Direct mode
+    def on_enter_direct(self):
+        self.get_logger().info("Car is now entering DIRECT mode.")
+
+    def on_exit_direct(self):
+        self.get_logger().info("Car is now exiting DIRECT mode.")
+
+    # Auto mode
+    def on_enter_auto(self):
+        self.get_logger().info("Car is now entering AUTO mode.")
+
+    def on_exit_auto(self):
+        self.get_logger().info("Car is now exiting AUTO mode.")
+
     def command_callback(self, msg):
         """Responding to a received command."""
         self.command_pub.publish(msg)
 
         if msg.operational_mode.lower() == 'direct':
-            self.get_logger().info("Car is now in DIRECT mode.")
+            if self.state == 'direct':
+                self.get_logger().info("Car is already in DIRECT mode!")
+            else:
+                self.direct()
         if msg.operational_mode.lower() == 'auto':
-            self.get_logger().info("Car is now in AUTO mode.")
+            if self.state == 'auto':
+                self.get_logger().info("Car is already in AUTO mode!")
+            else:
+                self.auto()
 
 
 def main():
