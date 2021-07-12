@@ -6,52 +6,44 @@ from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription
+from launch.conditions import IfCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
+
 def generate_launch_description():
+    """Launch hardware_nodes.launch and the ackermann_control node for ackermann drive control of the piracer. Intended
+    for use with the ackermann_drive.launch configuration of the mqtt_bridge package.
+    """
     bridge_topics = join(get_package_share_directory('piracer'),
-                         'config','ackermann_bridge_topics.yaml')
-    steering_config = join(get_package_share_directory('piracer'),
-                           'config','steering_config.yaml')
+                         'config', 'ackermann_bridge_topics.yaml')
+    launch_directory = get_package_share_directory('piracer')
+    launch_hardware = LaunchConfiguration('launch_hardware')
+
     return LaunchDescription([
-        DeclareLaunchArgument('car_name', default_value='car1', 
-                              description='Sets the namespace for this car.'),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
-            executable='steering_driver',
-            name='steering_driver',
-            parameters=[steering_config]
+        DeclareLaunchArgument(
+            'car_name',
+            default_value='car1',
+            description='Sets the namespace for this car.'
         ),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
-            executable='throttle_driver',
-            name='throttle_driver'
+        DeclareLaunchArgument(
+            'launch_hardware',
+            default_value='true',
+            description='Determines if hardware_nodes.launch is called.'
         ),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
-            executable='display_driver',
-            name='display_driver'
-        ),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
-            executable='power_monitor_driver',
-            name='power_monitor_driver'
-        ),
-        Node(
-            package='v4l2_camera',
-            namespace=[LaunchConfiguration('car_name')],
-            executable='v4l2_camera_node',
-            name='picamera_driver'
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([launch_directory, '/hardware_nodes.launch.py']),
+            launch_arguments={
+                'car_name': LaunchConfiguration('car_name')
+            }.items(),
+            condition=IfCondition(launch_hardware)
         ),
         Node(
             package='piracer',
             namespace=[LaunchConfiguration('car_name')],
             executable='ackermann_controller',
             name='ackermann_controller',
-            parameters=[bridge_topics]
+            parameters=[bridge_topics],
         )
     ])

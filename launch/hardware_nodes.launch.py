@@ -10,10 +10,8 @@ from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    command_bridge_topics = join(get_package_share_directory('piracer'),
-                                 'config', 'command_bridge_topics.yaml')
-    ackermann_bridge_topics = join(get_package_share_directory('piracer'),
-                                   'config', 'ackermann_bridge_topics.yaml')
+    """ Lowest-level launch for piracer, including only the nodes that interact directly with the hardware.
+    """
     steering_config = join(get_package_share_directory('piracer'),
                            'config', 'steering_config.yaml')
     return LaunchDescription([
@@ -49,19 +47,5 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('car_name')],
             executable='v4l2_camera_node',
             name='picamera_driver'
-        ),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
-            executable='autonomy_manager',
-            name='autonomy_manager',
-            parameters=[command_bridge_topics]
-        ),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
-            executable='ackermann_controller',
-            name='ackermann_controller',
-            parameters=[ackermann_bridge_topics]
         )
     ])
