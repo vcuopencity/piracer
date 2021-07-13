@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    bridge_input_topic: 'cmd/in'
+    bridge_output_topic: 'cmd/out'

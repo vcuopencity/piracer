@@ -31,6 +31,7 @@ setup(
             'power_monitor_driver = piracer.power_monitor_driver:main',
             'teleop_controller = piracer.teleop_controller:main',
             'ackermann_controller = piracer.ackermann_controller:main',
+            'autonomy_manager = piracer.autonomy_manager:main',
         ],
     },
 )
