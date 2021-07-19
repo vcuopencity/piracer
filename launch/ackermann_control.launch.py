@@ -18,9 +18,13 @@ def generate_launch_description():
     """
     bridge_topics = join(get_package_share_directory('piracer'),
                          'config', 'ackermann_bridge_topics.yaml')
-    launch_directory = get_package_share_directory('piracer')
-    launch_hardware = LaunchConfiguration('launch_hardware')
+    piracer_launch_directory = get_package_share_directory('piracer')
+    bridge_launch_directory = get_package_share_directory('mqtt_bridge')
 
+    launch_hardware = LaunchConfiguration('launch_hardware')
+    launch_bridge = LaunchConfiguration('launch_bridge')
+
+    # noinspection PyTypeChecker
     return LaunchDescription([
         DeclareLaunchArgument(
             'car_name',
@@ -32,8 +36,13 @@ def generate_launch_description():
             default_value='true',
             description='Determines if hardware_nodes.launch is called.'
         ),
+        DeclareLaunchArgument(
+            'launch_bridge',
+            default_value='true',
+            description='Determinds if ackermann_drive_bridge.launch is called from the mqtt_bridge package.'
+        ),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([launch_directory, '/hardware_nodes.launch.py']),
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
                 'car_name': LaunchConfiguration('car_name')
             }.items(),
@@ -45,5 +54,12 @@ def generate_launch_description():
             executable='ackermann_controller',
             name='ackermann_controller',
             parameters=[bridge_topics],
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/ackermann_drive_bridge.launch.py']),
+            launch_arguments={
+                'car_name': LaunchConfiguration('car_name')
+            }.items(),
+            condition=IfCondition(launch_bridge)
         )
     ])

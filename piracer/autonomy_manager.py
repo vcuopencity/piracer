@@ -43,9 +43,9 @@ class AutonomyManager(Node):
         machine = Machine(model=self, states=states, transitions=transitions, initial='direct')
 
         # Service client
-        self.enable_ackermann_client = self.create_client(Enable, 'enable_ackermann_service')
+        self.enable_ackermann_client = self.create_client(Enable, 'ackermann_enable_service')
         while not self.enable_ackermann_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("'enable_ackermann_service' not available, waiting...")
+            self.get_logger().info("ackermann_enable_service not available, waiting...")
         self.ack_request = Enable.Request()
 
     # State Machine callbacks ---------------------------------------------------------------------

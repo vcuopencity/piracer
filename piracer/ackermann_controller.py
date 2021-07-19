@@ -4,7 +4,6 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Float64
-from autonomy_interfaces.srv import Enable
 
 
 class AckermannController(Node):
@@ -42,9 +41,6 @@ class AckermannController(Node):
             qos_profile=10,
         )
 
-        # Service Server
-        self.enable_srv = self.create_service(Enable, 'enable_ackermann_service', self.enable_callback)
-
     def create_ackermann_subscription(self):
         """Subscribe to the ackermann drive bridge."""
         self.ackermann_sub = self.create_subscription(
@@ -74,19 +70,6 @@ class AckermannController(Node):
         self.steering_pub.publish(steer_msg)
 
         self.ackermann_pub.publish(msg)
-
-    def enable_callback(self, request, response):
-        if request.enable:
-            self.create_ackermann_subscription()
-            response.result = True
-            response.status = 'Subscription created!'
-
-        elif not request.enable:
-            self.destroy_subscription(self.ackermann_sub)
-            response.result = True
-            response.status = 'Subscription destroyed!'
-
-        return response
 
 
 def main():

@@ -7,6 +7,7 @@ from launch_ros.actions import Node
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
@@ -17,29 +18,46 @@ def generate_launch_description():
     """
     command_bridge_topics = join(get_package_share_directory('piracer'),
                                  'config', 'command_bridge_topics.yaml')
-    launch_directory = get_package_share_directory('piracer')
+    piracer_launch_directory = get_package_share_directory('piracer')
+    bridge_launch_directory = get_package_share_directory('mqtt_bridge')
+    launch_bridge = LaunchConfiguration('launch_bridge')
     return LaunchDescription([
-        DeclareLaunchArgument('car_name', default_value='car1',
-                              description='Sets the namespace for this car.'),
+        DeclareLaunchArgument(
+            'car_name',
+            default_value='car1',
+            description='Sets the namespace for this car.'),
+        DeclareLaunchArgument(
+            'launch_bridge',
+            default_value='true',
+            description='Determinds if ackermann_drive_bridge.launch is called from the mqtt_bridge package.'
+        ),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([launch_directory, '/ackermann_control.launch.py']),
+
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/ackermann_control.launch.py']),
             launch_arguments={
                 'car_name': LaunchConfiguration('car_name'),
                 'launch_hardware': 'false'
             }.items()
         ),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([launch_directory, '/teleop_control.launch.py']),
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/teleop_control.launch.py']),
             launch_arguments={
                 'car_name': LaunchConfiguration('car_name'),
                 'launch_hardware': 'false'
             }.items()
         ),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([launch_directory, '/hardware_nodes.launch.py']),
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
                 'car_name': LaunchConfiguration('car_name')
             }.items(),
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/command_bridge.launch.py']),
+            launch_arguments={
+                'car_name': LaunchConfiguration('car_name')
+            }.items(),
+            condition=IfCondition(launch_bridge)
         ),
         Node(
             package='piracer',
