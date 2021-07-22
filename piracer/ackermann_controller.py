@@ -7,30 +7,29 @@ from std_msgs.msg import Float64
 
 
 class AckermannController(Node):
+    """Create a pub/sub for the ackermann drive bridge in the mqtt_bridge package, create publishers for the hardware
+    nodes, create a service server for the autonomy_manager to control whether or not ackermann control is active.
+    """
     def __init__(self):
         super().__init__('ackermann_driver')
 
-        # Initializing parameters
+        # Parameters
         self.declare_parameter('bridge_input_topic', 'ros_pub_top')
-        input_topic = self.get_parameter('bridge_input_topic').get_parameter_value().string_value
+        self.input_topic = self.get_parameter('bridge_input_topic').get_parameter_value().string_value
 
         self.declare_parameter('bridge_output_topic', 'ros_sub_top')
-        output_topic = self.get_parameter('bridge_output_topic').get_parameter_value().string_value
+        self.output_topic = self.get_parameter('bridge_output_topic').get_parameter_value().string_value
 
-        #  Bridge sub / pub
-        self.ackermann_sub = self.create_subscription(
-            msg_type=AckermannDrive,
-            topic=input_topic,
-            callback=self.ackermann_callback,
-            qos_profile=10,
-        )
+        #  Bridge subscriber / publisher
+        self.create_ackermann_subscription()
+
         self.ackermann_pub = self.create_publisher(
             msg_type=AckermannDrive,
-            topic=output_topic,
+            topic=self.output_topic,
             qos_profile=10,
         )
 
-        # Publishers for robot control
+        # Publishers for hardware nodes
         self.steering_pub = self.create_publisher(
             msg_type=Float64,
             topic='angle',
@@ -39,6 +38,15 @@ class AckermannController(Node):
         self.throttle_pub = self.create_publisher(
             msg_type=Float64,
             topic='throttle',
+            qos_profile=10,
+        )
+
+    def create_ackermann_subscription(self):
+        """Subscribe to the ackermann drive bridge."""
+        self.ackermann_sub = self.create_subscription(
+            msg_type=AckermannDrive,
+            topic=self.input_topic,
+            callback=self.ackermann_callback,
             qos_profile=10,
         )
 
