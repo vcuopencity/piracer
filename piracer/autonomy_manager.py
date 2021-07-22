@@ -1,6 +1,6 @@
 from command_msgs.msg import Command
 
-from autonomy_interfaces.srv import Enable
+from autonomy_management_msgs.srv import Enable
 
 import rclpy
 from rclpy.node import Node

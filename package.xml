@@ -7,7 +7,7 @@
   <maintainer email="morrissettal2@vcu.edu">Adam Morrissett</maintainer>
   <license>TODO: License declaration</license>
 
-  <depend>autonomy_interfaces</depend>
+  <depend>autonomy_management_msgs</depend>
   <depend>command_msgs</depend>
   <depend>piracer_msgs</depend>
   <depend>rclcpy</depend>
