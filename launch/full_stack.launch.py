@@ -23,45 +23,45 @@ def generate_launch_description():
     launch_bridge = LaunchConfiguration('launch_bridge')
     return LaunchDescription([
         DeclareLaunchArgument(
-            'car_name',
+            'agent_name',
             default_value='car1',
             description='Sets the namespace for this car.'),
         DeclareLaunchArgument(
             'launch_bridge',
             default_value='true',
-            description='Determinds if ackermann_drive_bridge.launch is called from the mqtt_bridge package.'
+            description='Determinds if appropriate bridge files are launched from the mqtt_bridge package.'
         ),
         IncludeLaunchDescription(
 
             PythonLaunchDescriptionSource([piracer_launch_directory, '/ackermann_control.launch.py']),
             launch_arguments={
-                'car_name': LaunchConfiguration('car_name'),
+                'agent_name': LaunchConfiguration('agent_name'),
                 'launch_hardware': 'false'
             }.items()
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/teleop_control.launch.py']),
             launch_arguments={
-                'car_name': LaunchConfiguration('car_name'),
+                'agent_name': LaunchConfiguration('agent_name'),
                 'launch_hardware': 'false'
             }.items()
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
-                'car_name': LaunchConfiguration('car_name')
+                'agent_name': LaunchConfiguration('agent_name')
             }.items(),
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/command_bridge.launch.py']),
             launch_arguments={
-                'car_name': LaunchConfiguration('car_name')
+                'agent_name': LaunchConfiguration('agent_name')
             }.items(),
             condition=IfCondition(launch_bridge)
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='autonomy_manager',
             name='autonomy_manager',
             parameters=[command_bridge_topics]

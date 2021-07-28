@@ -20,7 +20,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            'car_name',
+            'agent_name',
             default_value='car1',
             description='Sets the namespace for this car.'
         ),
@@ -32,13 +32,13 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
-                'car_name': LaunchConfiguration('car_name')
+                'agent_name': LaunchConfiguration('agent_name')
             }.items(),
             condition=IfCondition(launch_hardware)
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='teleop_controller',
             name='teleop_controller'
         )

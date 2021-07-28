@@ -15,36 +15,36 @@ def generate_launch_description():
     steering_config = join(get_package_share_directory('piracer'),
                            'config', 'steering_config.yaml')
     return LaunchDescription([
-        DeclareLaunchArgument('car_name', default_value='car1',
+        DeclareLaunchArgument('agent_name', default_value='car1',
                               description='Sets the namespace for this car.'),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='steering_driver',
             name='steering_driver',
             parameters=[steering_config]
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='throttle_driver',
             name='throttle_driver'
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='display_driver',
             name='display_driver'
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='power_monitor_driver',
             name='power_monitor_driver'
         ),
         Node(
             package='v4l2_camera',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='v4l2_camera_node',
             name='picamera_driver'
         )

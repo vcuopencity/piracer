@@ -27,7 +27,7 @@ def generate_launch_description():
     # noinspection PyTypeChecker
     return LaunchDescription([
         DeclareLaunchArgument(
-            'car_name',
+            'agent_name',
             default_value='car1',
             description='Sets the namespace for this car.'
         ),
@@ -44,13 +44,13 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
-                'car_name': LaunchConfiguration('car_name')
+                'agent_name': LaunchConfiguration('agent_name')
             }.items(),
             condition=IfCondition(launch_hardware)
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('car_name')],
+            namespace=[LaunchConfiguration('agent_name')],
             executable='ackermann_controller',
             name='ackermann_controller',
             parameters=[bridge_topics],
@@ -58,7 +58,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/ackermann_drive_bridge.launch.py']),
             launch_arguments={
-                'car_name': LaunchConfiguration('car_name')
+                'agent_name': LaunchConfiguration('agent_name')
             }.items(),
             condition=IfCondition(launch_bridge)
         )
