@@ -32,6 +32,7 @@ setup(
             'teleop_controller = piracer.teleop_controller:main',
             'ackermann_controller = piracer.ackermann_controller:main',
             'autonomy_manager = piracer.autonomy_manager:main',
+            'car_state = piracer.car_state:main',
         ],
     },
 )

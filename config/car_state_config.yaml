@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    car_state_output_topic: 'car_state'
+    report_frequency: 1.0

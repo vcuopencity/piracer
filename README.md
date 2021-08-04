@@ -22,7 +22,7 @@ ROS2 package for [Waveshare PiRacer](https://www.waveshare.com/piracer-ai-kit.ht
 Below is the hierarchy of the launch files. `hardware_nodes` is necessary for any of the other launch files to do
 anything, but for practical purposes it should never need to be launched by itself.
 
-![Launch file hierarchy](assets/launch_hierarchy.png)
+![Launch file hierarchy](assets/launch_hierarchy.jpg)
 
 ### Launch file options
 1. `full_stack.launch.py`: Launches all possible control modes at once, as well as the autonomy_manager.
