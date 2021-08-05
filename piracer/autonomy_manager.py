@@ -15,11 +15,11 @@ class AutonomyManager(Node):
         super().__init__('autonomy_manager')
 
         # Topic parameterd
-        self.declare_parameter('bridge_input_topic', 'control_input_topic')
-        input_topic = self.get_parameter('bridge_input_topic').get_parameter_value().string_value
+        self.declare_parameter('cmd_bridge_input_topic', 'control_input_topic')
+        input_topic = self.get_parameter('cmd_bridge_input_topic').get_parameter_value().string_value
 
-        self.declare_parameter('bridge_output_topic', 'control_output_topic')
-        output_topic = self.get_parameter('bridge_output_topic').get_parameter_value().string_value
+        self.declare_parameter('cmd_bridge_output_topic', 'control_output_topic')
+        output_topic = self.get_parameter('cmd_bridge_output_topic').get_parameter_value().string_value
 
         # Bridge subscriber / publisher
         self.command_sub = self.create_subscription(

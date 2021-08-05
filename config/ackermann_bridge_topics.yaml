@@ -1,5 +1,0 @@
-/**:
-  ros__parameters:
-    bridge_input_topic: 'ackermann/in'
-    bridge_output_topic: 'ackermann/out'
-    

@@ -9,6 +9,7 @@
 
   <depend>autonomy_mgmt_msgs</depend>
   <depend>cmd_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>piracer_msgs</depend>
   <depend>rclcpy</depend>
   <depend>std_msgs</depend>

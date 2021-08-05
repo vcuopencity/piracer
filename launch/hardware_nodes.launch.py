@@ -12,8 +12,8 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     """ Lowest-level launch for piracer, including only the nodes that interact directly with the hardware.
     """
-    steering_config = join(get_package_share_directory('piracer'),
-                           'config', 'steering_config.yaml')
+    car_config = join(get_package_share_directory('piracer'),
+                      'config', 'car_config.yaml')
     return LaunchDescription([
         DeclareLaunchArgument('agent_name', default_value='car1',
                               description='Sets the namespace for this car.'),
@@ -22,7 +22,7 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='steering_driver',
             name='steering_driver',
-            parameters=[steering_config]
+            parameters=[car_config]
         ),
         Node(
             package='piracer',

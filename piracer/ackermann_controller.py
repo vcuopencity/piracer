@@ -14,11 +14,11 @@ class AckermannController(Node):
         super().__init__('ackermann_driver')
 
         # Parameters
-        self.declare_parameter('bridge_input_topic', 'ros_pub_top')
-        self.input_topic = self.get_parameter('bridge_input_topic').get_parameter_value().string_value
+        self.declare_parameter('ackermann_bridge_input_topic', 'ros_pub_top')
+        self.input_topic = self.get_parameter('ackermann_bridge_input_topic').get_parameter_value().string_value
 
-        self.declare_parameter('bridge_output_topic', 'ros_sub_top')
-        self.output_topic = self.get_parameter('bridge_output_topic').get_parameter_value().string_value
+        self.declare_parameter('ackermann_bridge_output_topic', 'ros_sub_top')
+        self.output_topic = self.get_parameter('ackermann_bridge_output_topic').get_parameter_value().string_value
 
         #  Bridge subscriber / publisher
         self.create_ackermann_subscription()
