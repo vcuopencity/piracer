@@ -10,6 +10,7 @@ car1:
   car_state:
     ros__parameters:
       car_state_output_topic: 'car_state'
+      neighbor_list: ['car1', 'car2', 'car3', 'signal1']
       report_frequency: 1.0
   ackermann_controller:
     ros__parameters:
