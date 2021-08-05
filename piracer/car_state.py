@@ -1,12 +1,23 @@
+# Standard library imports
+from functools import partial
+from geometry_msgs.msg import PoseStamped
+
+# 3rd-party imports
 import rclpy
 from rclpy.node import Node
-
 from traffic_signal_msgs.msg import SignalState
-from geometry_msgs.msg import PoseStamped
 
 
 class CarInfo:
     def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+class SignalInfo:
+    """Store the state of signals."""
+    def __init__(self, states, x, y):
+        self.states = states
         self.x = x
         self.y = y
 
@@ -49,19 +60,19 @@ class CarState(Node):
         """Subscribe to all neighbor state topics."""
         for neighbor in self._neighbor_list:
             if self._agent_name in neighbor:
-                return
+                continue
             elif "car" in neighbor:
                 self.create_subscription(
                     msg_type=PoseStamped,
                     topic='/' + neighbor + '/car_state',
-                    callback=self._neighbor_cb,
+                    callback=partial(self._update_car_info, agent_name=neighbor),
                     qos_profile=10,
                 )
             elif "signal" in neighbor:
                 self.create_subscription(
                     msg_type=SignalState,
                     topic='/' + neighbor + '/signal_state',
-                    callback=self._neighbor_cb,
+                    callback=partial(self._update_signal_info, agent_name=neighbor),
                     qos_profile=10,
                 )
 
@@ -70,8 +81,13 @@ class CarState(Node):
         init_status = CarInfo(0, 0)
         self._agent_states[self._agent_name] = init_status
 
-    def _neighbor_cb(self, msg):
-        pass
+    def _update_car_info(self, msg, agent_name):
+        new_info = CarInfo(msg.pose.position.x, msg.pose.position.y)
+        self._agent_states[agent_name] = new_info
+
+    def _update_signal_info(self, msg, agent_name):
+        new_info = SignalInfo(msg.states.states, msg.pose.pose.position.x, msg.pose.pose.position.y)
+        self._agent_states[agent_name] = new_info
 
     def _timer_cb(self):
         state_msg = PoseStamped()
@@ -81,6 +97,7 @@ class CarState(Node):
         state_msg.pose.position.y = float(this_car_status.y)
 
         self._car_state_pub.publish(state_msg)
+        self.get_logger().debug(str(self._agent_states))
 
 
 def main():
