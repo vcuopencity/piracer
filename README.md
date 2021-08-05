@@ -32,7 +32,9 @@ anything, but for practical purposes it should never need to be launched by itse
 ### Command-line arguments
 1. `agent_name`: Sets the namespace for all the nodes and topics. Necessary to set when launching multiple cars on the
 same ROS domain at once, otherwise there will be collisions and the cars will not function. 
-   * Default value: `car1`
+    * Default value: `car1`
+    * When using this argument, it is necessary to change the first line of `config/car_config.yaml` to match, otherwise 
+      the parameter values **will not be loaded**.
   
 ### Launch examples
 The following examples will only work after the package has already been successfully built using `colcon build 
@@ -41,3 +43,12 @@ The following examples will only work after the package has already been success
     * Launches every control mode and the autonomy manager, in the namespace `/car1/`.
 1. `ros2 launch piracer teleop_control.launch.py agent_name:=car2`
     * Launches the controller-driven mode, in the namespace `/car2/`.
+    * It is necessary to change line 1 of `config/car_config.yaml` for the parameter values to be loaded.
+    
+```
+car2:
+  autonomy_manager:
+    ros__parameters:
+ 
+ ....file continues....
+```
