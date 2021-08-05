@@ -45,10 +45,9 @@ The following examples will only work after the package has already been success
     * Launches the controller-driven mode, in the namespace `/car2/`.
     * It is necessary to change line 1 of `config/car_config.yaml` for the parameter values to be loaded.
     
-```
+```yaml
 car2:
   autonomy_manager:
     ros__parameters:
- 
- ....file continues....
+ #...
 ```
