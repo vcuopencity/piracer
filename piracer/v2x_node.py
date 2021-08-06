@@ -22,13 +22,13 @@ class SignalInfo:
         self.y = y
 
 
-class CarState(Node):
+class V2xNode(Node):
     """Report state of car and receive states of other agents. All states are stored in _agent_states in their
     respective agent information types. Currently, only CarInfo is implemented.
     """
 
     def __init__(self):
-        super().__init__('car_state')
+        super().__init__('v2x_node')
 
         self._agent_name = self.get_namespace().lstrip('/')
 
@@ -103,7 +103,7 @@ class CarState(Node):
 def main():
     """Boilerplate ROS node spin-up."""
     rclpy.init()
-    node = CarState()
+    node = V2xNode()
     rclpy.spin(node)
 
     node.destroy_node()

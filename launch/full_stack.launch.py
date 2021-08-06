@@ -69,8 +69,8 @@ def generate_launch_description():
         Node(
             package='piracer',
             namespace=[LaunchConfiguration('agent_name')],
-            executable='car_state',
-            name='car_state',
+            executable='v2x_node',
+            name='v2x_node',
             parameters=[car_config]
         )
     ])

@@ -7,7 +7,7 @@ car1:
     ros__parameters:
       min_angle: -75.0
       max_angle: 75.0
-  car_state:
+  v2x_node:
     ros__parameters:
       car_state_output_topic: 'car_state'
       neighbor_list: ['car1', 'car2', 'car3', 'signal1']
