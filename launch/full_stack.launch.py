@@ -16,8 +16,8 @@ def generate_launch_description():
     """ Launch hardware_nodes.launch and autonomy_manager node, as well as every control mode of the piracer using each
     respective launch file, passing launch_hardware=false so there aren't duplicates of the hardware nodes running.
     """
-    command_bridge_topics = join(get_package_share_directory('piracer'),
-                                 'config', 'command_bridge_topics.yaml')
+    car_config = join(get_package_share_directory('piracer'),
+                      'config', 'car_config.yaml')
     piracer_launch_directory = get_package_share_directory('piracer')
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
     launch_bridge = LaunchConfiguration('launch_bridge')
@@ -64,6 +64,13 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='autonomy_manager',
             name='autonomy_manager',
-            parameters=[command_bridge_topics]
+            parameters=[car_config]
+        ),
+        Node(
+            package='piracer',
+            namespace=[LaunchConfiguration('agent_name')],
+            executable='v2x_node',
+            name='v2x_node',
+            parameters=[car_config]
         )
     ])

@@ -16,8 +16,8 @@ def generate_launch_description():
     """Launch hardware_nodes.launch and the ackermann_control node for ackermann drive control of the piracer. Intended
     for use with the ackermann_drive.launch configuration of the mqtt_bridge package.
     """
-    bridge_topics = join(get_package_share_directory('piracer'),
-                         'config', 'ackermann_bridge_topics.yaml')
+    car_config = join(get_package_share_directory('piracer'),
+                      'config', 'car_config.yaml')
     piracer_launch_directory = get_package_share_directory('piracer')
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
 
@@ -53,7 +53,7 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='ackermann_controller',
             name='ackermann_controller',
-            parameters=[bridge_topics],
+            parameters=[car_config],
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/ackermann_drive_bridge.launch.py']),

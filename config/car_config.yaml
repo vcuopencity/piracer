@@ -1,0 +1,18 @@
+car1:
+  autonomy_manager:
+    ros__parameters:
+      cmd_bridge_input_topic: 'cmd/in'
+      cmd_bridge_output_topic: 'cmd/out'
+  steering_driver:
+    ros__parameters:
+      min_angle: -75.0
+      max_angle: 75.0
+  v2x_node:
+    ros__parameters:
+      car_state_output_topic: 'car_state'
+      neighbor_list: ['car1', 'car2', 'car3', 'signal1']
+      report_frequency: 1.0
+  ackermann_controller:
+    ros__parameters:
+      ackermann_bridge_input_topic: 'ackermann/in'
+      ackermann_bridge_output_topic: 'ackermann/out'
