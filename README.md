@@ -16,7 +16,7 @@ ROS2 package for [Waveshare PiRacer](https://www.waveshare.com/piracer-ai-kit.ht
     * use `motor3`
 * `0x70` Unknown
 
-## Launching / Using the package
+## Launching
 
 ### Launch hierarchy
 Below is the hierarchy of the launch files. `hardware_nodes` is necessary for any of the other launch files to do
@@ -35,6 +35,9 @@ same ROS domain at once, otherwise there will be collisions and the cars will no
     * Default value: `car1`
     * When using this argument, it is necessary to change the first line of `config/car_config.yaml` to match, otherwise 
       the parameter values **will not be loaded**.
+1. `launch_bridge`: Controls the launching of bridges from the `mqtt_bridge` package.
+    * Default value: `True`
+    * This should be left as true unless the bridges are being launched manually elsewhere.
   
 ### Launch examples
 The following examples will only work after the package has already been successfully built using `colcon build 
@@ -51,3 +54,28 @@ car2:
     ros__parameters:
  #...
 ```
+
+## Usage
+
+### Control Modes
+The following are the currently implemented control modes. Switching between these is handled within the `autonomy_manager`
+node, using ROS2 services. The commands from the `command` bridge to enable these modes are strings and are 
+case-insensitive.
+
+1. `direct`: `ackermann_drive` messages containing steering_angle and throttle commands are sent from the 
+   `ackermann_drive` bridge and parsed by the `ackermann_controller` node.
+   * **Default**: this is the state every car is in on launch
+   * Enabled via sending the string `direct` through the command bridge
+1. `auto`: Does nothing as currently implemented.
+   * Enabled via sending the string `auto` through the command bridge
+   
+### Bridges
+The following are bridges from the `mqtt_bridge` package that must be launched and in the appropriate namespace (have 
+the same `agent_name`) for cars to function  properly for `direct` mode and mode switching. They are automatically
+launched as needed unless `launch_bridge` is set to `False`.
+
+1. `ackermann_drive`: sends `ackermann_drive` messages to the `ackermann_controller` node while the car is in `direct` mode
+   * As the `autonomy_mode` node relies on a service that lives in the `ackermann_drive` bridge to enable / disable 
+     `direct` mode, it hang until the `ackermann_drive` bridge is launched, outputting to the logger that it is
+     waiting for the service to be available.
+1. `command`: allows for mode switching, as previously described in the [Control Modes](#control-modes) section.
