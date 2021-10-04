@@ -6,20 +6,8 @@ from geometry_msgs.msg import PoseStamped
 import rclpy
 from rclpy.node import Node
 from traffic_signal_msgs.msg import SignalState
-
-
-class CarInfo:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-
-class SignalInfo:
-    """Store the state of signals."""
-    def __init__(self, states, x, y):
-        self.states = states
-        self.x = x
-        self.y = y
+from ros2_message_converter import message_converter
+from opencity_utils import state_msgs
 
 
 class V2xNode(Node):
@@ -78,15 +66,15 @@ class V2xNode(Node):
 
     def _init_dict(self):
         self._agent_states = {}
-        init_status = CarInfo(0, 0)
+        init_status = state_msgs.CarInfo(0, 0)
         self._agent_states[self._agent_name] = init_status
 
     def _update_car_info(self, msg, agent_name):
-        new_info = CarInfo(msg.pose.position.x, msg.pose.position.y)
+        new_info = state_msgs.CarInfo(msg.pose.position.x, msg.pose.position.y)
         self._agent_states[agent_name] = new_info
 
     def _update_signal_info(self, msg, agent_name):
-        new_info = SignalInfo(msg.states.states, msg.pose.pose.position.x, msg.pose.pose.position.y)
+        new_info = state_msgs.SignalInfo(msg.states.states, msg.pose.pose.position.x, msg.pose.pose.position.y)
         self._agent_states[agent_name] = new_info
 
     def _timer_cb(self):
