@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Float64
+from geometry_msgs.msg import Twist
 
 
 class AckermannController(Node):
@@ -13,16 +14,37 @@ class AckermannController(Node):
     def __init__(self):
         super().__init__('ackermann_driver')
 
-        # Parameters
+        self._init_params()
+        self._init_sub()
+        self._init_pub()
+
+    def _init_params(self):
         self.declare_parameter('ackermann_bridge_input_topic', 'ros_pub_top')
         self.input_topic = self.get_parameter('ackermann_bridge_input_topic').get_parameter_value().string_value
 
         self.declare_parameter('ackermann_bridge_output_topic', 'ros_sub_top')
         self.output_topic = self.get_parameter('ackermann_bridge_output_topic').get_parameter_value().string_value
 
-        #  Bridge subscriber / publisher
-        self.create_ackermann_subscription()
+        self.declare_parameter('vehicle_length', 1.0)
+        self.vehicle_length = self.get_parameter('vehicle_length').get_parameter_value()
 
+    def _init_sub(self):
+        """Subscribe to the ackermann drive bridge."""
+        self.ackermann_sub = self.create_subscription(
+            msg_type=AckermannDrive,
+            topic=self.input_topic,
+            callback=self.ackermann_callback,
+            qos_profile=10,
+        )
+        self._twist_sub = self.create_subscription(
+            msg_type=Twist,
+            topic='twist',
+            callback=self._twist_callback,
+            qos_profile=10,
+        )
+
+    def _init_pub(self):
+        # AckermannDrive bridge publisher
         self.ackermann_pub = self.create_publisher(
             msg_type=AckermannDrive,
             topic=self.output_topic,
@@ -41,14 +63,8 @@ class AckermannController(Node):
             qos_profile=10,
         )
 
-    def create_ackermann_subscription(self):
-        """Subscribe to the ackermann drive bridge."""
-        self.ackermann_sub = self.create_subscription(
-            msg_type=AckermannDrive,
-            topic=self.input_topic,
-            callback=self.ackermann_callback,
-            qos_profile=10,
-        )
+    def _twist_callback(self, msg):
+        self.get_logger().info('Twist received!')
 
     def ackermann_callback(self, msg):
         """Publish speed and steering angle to their appropriate topics."""

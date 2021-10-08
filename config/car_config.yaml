@@ -16,3 +16,4 @@ car1:
     ros__parameters:
       ackermann_bridge_input_topic: 'ackermann/in'
       ackermann_bridge_output_topic: 'ackermann/out'
+      vehicle_length: 20.0
