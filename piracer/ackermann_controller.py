@@ -1,10 +1,9 @@
-from ackermann_msgs.msg import AckermannDrive
-
 import rclpy
-from rclpy.node import Node
-
-from std_msgs.msg import Float64
+import numpy
+from ackermann_msgs.msg import AckermannDrive
 from geometry_msgs.msg import Twist
+from rclpy.node import Node
+from std_msgs.msg import Float64
 
 
 class AckermannController(Node):
@@ -64,7 +63,22 @@ class AckermannController(Node):
         )
 
     def _twist_callback(self, msg):
+        """Calculate a new steering angle and throttle amount based on incoming twist message and
+        publish them to the steering and throttle nodes.
+        """
         self.get_logger().info('Twist received!')
+        velocity = msg.linear.x
+        omega = msg.angular.z
+        phi = numpy.arctan((self.vehicle_length*omega)/velocity)
+
+        throttle_msg = Float64()
+        throttle_msg.data = velocity
+
+        steer_msg = Float64()
+        steer_msg.data = phi
+
+        self.throttle_pub.publish(throttle_msg)
+        self.steering_pub.publish(steer_msg)
 
     def ackermann_callback(self, msg):
         """Publish speed and steering angle to their appropriate topics."""
