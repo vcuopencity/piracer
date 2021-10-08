@@ -1,4 +1,5 @@
 # Standard library imports
+import json
 from functools import partial
 from geometry_msgs.msg import PoseStamped
 
@@ -110,6 +111,11 @@ class V2xNode(Node):
 
         state_msg.pose.position.x = float(this_car_status.x)
         state_msg.pose.position.y = float(this_car_status.y)
+
+        # MQTT stuff
+        state_msg_dict = message_converter.convert_ros_message_to_dictionary(state_msg)
+        state_msg_byte = json.dumps(state_msg_dict).encode('utf-8')
+        self.mqtt_client.publish(f'/{self._agent_name}/{self._output_topic}', state_msg_byte)
 
         self._car_state_pub.publish(state_msg)
         self.get_logger().debug(str(self._agent_states))
