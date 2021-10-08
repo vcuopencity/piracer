@@ -4,10 +4,11 @@ from geometry_msgs.msg import PoseStamped
 
 # 3rd-party imports
 import rclpy
-from rclpy.node import Node
-from traffic_signal_msgs.msg import SignalState
-from ros2_message_converter import message_converter
 from opencity_utils import state_msgs
+import paho.mqtt.client
+from rclpy.node import Node
+from ros2_message_converter import message_converter
+from traffic_signal_msgs.msg import SignalState
 
 
 class V2xNode(Node):
@@ -22,6 +23,7 @@ class V2xNode(Node):
 
         self._init_params()
         self._init_pub()
+        self._init_mqtt()
         self._init_sub()
         self._init_dict()
 
@@ -36,6 +38,9 @@ class V2xNode(Node):
 
         self.declare_parameter('neighbor_list', [])
         self._neighbor_list = self.get_parameter('neighbor_list').get_parameter_value().string_array_value
+
+        self.declare_parameter('mqtt_broker_uri', '127.0.0.1')
+        self._mqtt_broker_uri = self.get_parameter('mqtt_broker_uri').get_parameter_value().string_value
 
     def _init_pub(self):
         self._car_state_pub = self.create_publisher(
@@ -56,6 +61,7 @@ class V2xNode(Node):
                     callback=partial(self._update_car_info, agent_name=neighbor),
                     qos_profile=10,
                 )
+                self.mqtt_client.subscribe(f'/{neighbor}/car_state')
             elif "signal" in neighbor:
                 self.create_subscription(
                     msg_type=SignalState,
@@ -63,6 +69,27 @@ class V2xNode(Node):
                     callback=partial(self._update_signal_info, agent_name=neighbor),
                     qos_profile=10,
                 )
+                self.mqtt_client.subscribe(f'/{neighbor}/signal_state')
+
+    def _init_mqtt(self):
+        """Create an MQTT client, set callbacks, connect to the broker, and start the loop."""
+        self.mqtt_client = paho.mqtt.client.Client(f'/{self._agent_name}/v2x_node')
+
+        self.mqtt_client.on_connect = self._mqtt_on_connect
+        self.mqtt_client.on_message = self._mqtt_on_message
+        self.mqtt_client.on_publish = self._mqtt_on_publish
+
+        self.mqtt_client.connect(self._mqtt_broker_uri, 1883)
+        self.mqtt_client.loop_start()
+
+    def _mqtt_on_connect(self, client, userdata, flags, rc):
+        self.get_logger().info(f'MQTT Publisher connected to: {self._mqtt_broker_uri} with result code: {rc}')
+
+    def _mqtt_on_message(self, client, userdata, flags, rc):
+        pass
+
+    def _mqtt_on_publish(self, userdata, flags, rc):
+        pass
 
     def _init_dict(self):
         self._agent_states = {}
