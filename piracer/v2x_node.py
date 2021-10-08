@@ -23,7 +23,6 @@ class V2xNode(Node):
         self._agent_name = self.get_namespace().lstrip('/')
 
         self._init_params()
-        self._init_pub()
         self._init_mqtt()
         self._init_sub()
         self._init_dict()
@@ -43,33 +42,14 @@ class V2xNode(Node):
         self.declare_parameter('mqtt_broker_uri', '127.0.0.1')
         self._mqtt_broker_uri = self.get_parameter('mqtt_broker_uri').get_parameter_value().string_value
 
-    def _init_pub(self):
-        self._car_state_pub = self.create_publisher(
-            msg_type=PoseStamped,
-            topic=self._output_topic,
-            qos_profile=10,
-        )
-
     def _init_sub(self):
         """Subscribe to all neighbor state topics."""
         for neighbor in self._neighbor_list:
             if self._agent_name in neighbor:
                 continue
             elif "car" in neighbor:
-                # self.create_subscription(
-                #     msg_type=PoseStamped,
-                #     topic='/' + neighbor + '/car_state',
-                #     callback=partial(self._update_car_info, agent_name=neighbor),
-                #     qos_profile=10,
-                # )
                 self.mqtt_client.subscribe(f'/{neighbor}/car_state')
             elif "signal" in neighbor:
-                # self.create_subscription(
-                #     msg_type=SignalState,
-                #     topic='/' + neighbor + '/signal_state',
-                #     callback=partial(self._update_signal_info, agent_name=neighbor),
-                #     qos_profile=10,
-                # )
                 self.mqtt_client.subscribe(f'/{neighbor}/signal_state')
 
     def _init_mqtt(self):
@@ -78,7 +58,6 @@ class V2xNode(Node):
 
         self.mqtt_client.on_connect = self._mqtt_on_connect
         self.mqtt_client.on_message = self._mqtt_on_message
-        self.mqtt_client.on_publish = self._mqtt_on_publish
 
         self.mqtt_client.connect(self._mqtt_broker_uri, 1883)
         self.mqtt_client.loop_start()
@@ -87,56 +66,49 @@ class V2xNode(Node):
         self.get_logger().info(f'MQTT Publisher connected to: {self._mqtt_broker_uri} with result code: {rc}')
 
     def _mqtt_on_message(self, client, userdata, msg):
+        """Determine the state type that was received and forward it to the appropriate function for storing."""
         topic_info = msg.topic.split('/')
         state_type = topic_info[-1]
         agent_name = topic_info[-2]
-        if state_type == 'car_state':
-            self._mqtt_update_car_info(msg, agent_name)
-        elif state_type == 'signal_state':
-            self._mqtt_update_signal_info(msg, agent_name)
 
-    def _mqtt_update_car_info(self, mqtt_msg, agent_name):
+        if state_type == 'car_state':
+            self._update_car_info(msg, agent_name)
+        elif state_type == 'signal_state':
+            self._update_signal_info(msg, agent_name)
+
+    def _update_car_info(self, mqtt_msg, agent_name):
+        """Convert MQTT msg to dict, then to ROS message. Store this information in _agent_states under agent_name."""
         dict_msg = json.loads(mqtt_msg.payload.decode('utf-8'))
         ros_msg = message_converter.convert_dictionary_to_ros_message("geometry_msgs/PoseStamped", dict_msg)
         new_info = state_msgs.CarInfo(ros_msg.pose.position.x, ros_msg.pose.position.y)
         self._agent_states[agent_name] = new_info
 
-    def _mqtt_update_signal_info(self, mqtt_msg, agent_name):
+    def _update_signal_info(self, mqtt_msg, agent_name):
+        """Convert MQTT msg to dict, then to ROS message. Store this information in _agent_states under agent_name."""
         dict_msg = json.loads(mqtt_msg.payload.decode('utf-8'))
         ros_msg = message_converter.convert_dictionary_to_ros_message("traffic_signal_msgs/SignalState", dict_msg)
         new_info = state_msgs.SignalInfo(ros_msg.states.states, ros_msg.pose.pose.position.x, ros_msg.pose.pose.position.y)
         self._agent_states[agent_name] = new_info
-
-    def _mqtt_on_publish(self, userdata, flags, rc):
-        pass
 
     def _init_dict(self):
         self._agent_states = {}
         init_status = state_msgs.CarInfo(0, 0)
         self._agent_states[self._agent_name] = init_status
 
-    def _update_car_info(self, msg, agent_name):
-        new_info = state_msgs.CarInfo(msg.pose.position.x, msg.pose.position.y)
-        self._agent_states[agent_name] = new_info
-
-    def _update_signal_info(self, msg, agent_name):
-        new_info = state_msgs.SignalInfo(msg.states.states, msg.pose.pose.position.x, msg.pose.pose.position.y)
-        self._agent_states[agent_name] = new_info
-
     def _timer_cb(self):
+        """Create ROS message containing this agent's state from _agent_states, convert it to a dictionary,
+        convert it to a byte type, and then publish it via MQTT."""
         state_msg = PoseStamped()
         this_car_status = self._agent_states[self._agent_name]
 
         state_msg.pose.position.x = float(this_car_status.x)
         state_msg.pose.position.y = float(this_car_status.y)
 
-        # MQTT stuff
         state_msg_dict = message_converter.convert_ros_message_to_dictionary(state_msg)
         state_msg_byte = json.dumps(state_msg_dict).encode('utf-8')
         self.mqtt_client.publish(f'/{self._agent_name}/{self._output_topic}', state_msg_byte)
 
-        self._car_state_pub.publish(state_msg)
-        self.get_logger().info(str(self._agent_states))
+        self.get_logger().debug(str(self._agent_states))
 
 
 def main():
