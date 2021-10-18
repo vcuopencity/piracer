@@ -44,7 +44,7 @@ class ThrottleDriver(Node):
     def _msg_cb(self, msg: Throttle):
         self.motor.throttle = min(self.get_parameter('max_throttle').value,
                                   max(self.get_parameter('min_throttle').value,
-                                      msg.percentage))
+                                      msg.percent))
 
 
 def main():
