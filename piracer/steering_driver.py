@@ -3,7 +3,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from rcl_interfaces.msg import ParameterType
 
-from std_msgs.msg import Float64
+from piracer_msgs.msg import SteeringAngle
 
 import board
 import busio
@@ -25,7 +25,7 @@ class SteeringDriver(Node):
         self._max_angle = self.declare_parameter('max_angle', value=0.0,
                                                  descriptor=desc)
 
-        self._subscriber = self.create_subscription(msg_type=Float64,
+        self._subscriber = self.create_subscription(msg_type=SteeringAngle,
                                                     topic='angle',
                                                     callback=self._msg_cb,
                                                     qos_profile=10)
@@ -37,10 +37,10 @@ class SteeringDriver(Node):
         self.servo = Servo(pca.channels[0])
         self.servo.angle = 90.0
 
-    def _msg_cb(self, msg: Float64):
+    def _msg_cb(self, msg: SteeringAngle):
         angle = min(self.get_parameter('max_angle').value,
                     max(self.get_parameter('min_angle').value,
-                        msg.data))
+                        msg.degree))
         self.servo.angle = angle + 90
 
 

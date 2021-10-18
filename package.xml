@@ -12,7 +12,6 @@
   <depend>geometry_msgs</depend>
   <depend>piracer_msgs</depend>
   <depend>rclcpy</depend>
-  <depend>std_msgs</depend>
   <depend>transitions</depend>
   <depend>v4l2_camera</depend>
 

@@ -3,7 +3,7 @@ from ackermann_msgs.msg import AckermannDrive
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Float64
+from piracer_msgs.msg import SteeringAngle, Throttle
 
 
 class AckermannController(Node):
@@ -31,12 +31,12 @@ class AckermannController(Node):
 
         # Publishers for hardware nodes
         self.steering_pub = self.create_publisher(
-            msg_type=Float64,
+            msg_type=SteeringAngle,
             topic='angle',
             qos_profile=10,
         )
         self.throttle_pub = self.create_publisher(
-            msg_type=Float64,
+            msg_type=Throttle,
             topic='throttle',
             qos_profile=10,
         )
@@ -60,11 +60,11 @@ class AckermannController(Node):
             f'jerk: {msg.jerk:.2f} '
         )
 
-        throttle_msg = Float64()
-        throttle_msg.data = msg.speed
+        throttle_msg = Throttle()
+        throttle_msg.percent = msg.speed
 
-        steer_msg = Float64()
-        steer_msg.data = msg.steering_angle
+        steer_msg = SteeringAngle()
+        steer_msg.degree = msg.steering_angle
 
         self.throttle_pub.publish(throttle_msg)
         self.steering_pub.publish(steer_msg)
