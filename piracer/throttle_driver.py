@@ -4,7 +4,7 @@ from rcl_interfaces.msg import ParameterDescriptor
 from rcl_interfaces.msg import ParameterType
 from rcl_interfaces.msg import FloatingPointRange
 
-from std_msgs.msg import Float64
+from piracer_msgs.msg import Throttle
 
 import board
 import busio
@@ -29,7 +29,7 @@ class ThrottleDriver(Node):
         self.max_throttle = self.declare_parameter('max_throttle', value=1.0,
                                                    descriptor=desc)
 
-        self._subscriber = self.create_subscription(msg_type=Float64,
+        self._subscriber = self.create_subscription(msg_type=Throttle,
                                                     topic='throttle',
                                                     callback=self._msg_cb,
                                                     qos_profile=10)
@@ -41,10 +41,10 @@ class ThrottleDriver(Node):
         self.motor = DCMotor(pca.channels[3], pca.channels[4])
         self.motor.throttle = 0.0
 
-    def _msg_cb(self, msg: Float64):
+    def _msg_cb(self, msg: Throttle):
         self.motor.throttle = min(self.get_parameter('max_throttle').value,
                                   max(self.get_parameter('min_throttle').value,
-                                      msg.data))
+                                      msg.percent))
 
 
 def main():

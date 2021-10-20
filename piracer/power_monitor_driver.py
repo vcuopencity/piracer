@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Float64
 from piracer_msgs.msg import SystemPower
 
 import board
