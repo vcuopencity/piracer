@@ -27,7 +27,10 @@ class AckermannController(Node):
         self.output_topic = self.get_parameter('ackermann_bridge_output_topic').get_parameter_value().string_value
 
         self.declare_parameter('vehicle_length', 1.0)
-        self.vehicle_length = self.get_parameter('vehicle_length').get_parameter_value()
+        self.vehicle_length = self.get_parameter('vehicle_length').get_parameter_value().double_value
+
+        self.declare_parameter('maximum_velocity', 2.5)
+        self.max_velocity = self.get_parameter('maximum_velocity').get_parameter_value().double_value
 
     def _init_sub(self):
         """Subscribe to the ackermann drive bridge."""
@@ -74,10 +77,10 @@ class AckermannController(Node):
         phi = numpy.arctan((self.vehicle_length*omega)/velocity)
 
         throttle_msg = Throttle()
-        throttle_msg.data = velocity
+        throttle_msg.percent = self._parse_velocity(velocity)
 
         steer_msg = SteeringAngle()
-        steer_msg.data = phi
+        steer_msg.degree = phi
 
         self.throttle_pub.publish(throttle_msg)
         self.steering_pub.publish(steer_msg)
@@ -93,7 +96,8 @@ class AckermannController(Node):
         )
 
         throttle_msg = Throttle()
-        throttle_msg.percent = msg.speed
+        throttle_msg.percent = self._parse_velocity(msg.speed)
+        self.get_logger().debug(f'Publishing throttle: {throttle_msg.percent}')
 
         steer_msg = SteeringAngle()
         steer_msg.degree = msg.steering_angle
@@ -102,6 +106,10 @@ class AckermannController(Node):
         self.steering_pub.publish(steer_msg)
 
         self.ackermann_pub.publish(msg)
+
+    def _parse_velocity(self, velocity):
+        throttle_amount = velocity / self.max_velocity
+        return throttle_amount
 
 
 def main():
