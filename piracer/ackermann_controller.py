@@ -74,7 +74,12 @@ class AckermannController(Node):
         self.get_logger().info('Twist received!')
         velocity = msg.linear.x
         omega = msg.angular.z
-        phi = numpy.arctan((self.vehicle_length*omega)/velocity)
+
+        if abs(velocity) < 0.001:
+            velocity = 0
+            phi = 0
+        else:
+            phi = numpy.arctan((self.vehicle_length*omega)/velocity)
 
         throttle_msg = Throttle()
         throttle_msg.percent = self._parse_velocity(velocity)
