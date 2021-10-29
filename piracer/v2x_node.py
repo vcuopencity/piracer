@@ -1,15 +1,15 @@
 # Standard library imports
 import json
-from functools import partial
-from geometry_msgs.msg import PoseStamped
 
 # 3rd-party imports
-import rclpy
+from carma_v2x_msgs.msg import BSM
 from opencity_utils import state_msgs
-import paho.mqtt.client
 from rclpy.node import Node
 from ros2_message_converter import message_converter
 from traffic_signal_msgs.msg import SignalState
+
+import paho.mqtt.client
+import rclpy
 
 
 class V2xNode(Node):
@@ -79,8 +79,8 @@ class V2xNode(Node):
     def _update_car_info(self, mqtt_msg, agent_name):
         """Convert MQTT msg to dict, then to ROS message. Store this information in _agent_states under agent_name."""
         dict_msg = json.loads(mqtt_msg.payload.decode('utf-8'))
-        ros_msg = message_converter.convert_dictionary_to_ros_message("geometry_msgs/PoseStamped", dict_msg)
-        new_info = state_msgs.CarInfo(ros_msg.pose.position.x, ros_msg.pose.position.y)
+        ros_msg = message_converter.convert_dictionary_to_ros_message("carma_v2x_msgs/BSM", dict_msg)
+        new_info = state_msgs.CarInfo(ros_msg.core_data.latitude, ros_msg.core_data.longitude)
         self._agent_states[agent_name] = new_info
 
     def _update_signal_info(self, mqtt_msg, agent_name):
@@ -98,11 +98,11 @@ class V2xNode(Node):
     def _timer_cb(self):
         """Create ROS message containing this agent's state from _agent_states, convert it to a dictionary,
         convert it to a byte type, and then publish it via MQTT."""
-        state_msg = PoseStamped()
+        state_msg = BSM()
         this_car_status = self._agent_states[self._agent_name]
 
-        state_msg.pose.position.x = float(this_car_status.x)
-        state_msg.pose.position.y = float(this_car_status.y)
+        state_msg.core_data.latitude = float(this_car_status.latitude)
+        state_msg.core_data.longitude = float(this_car_status.longitude)
 
         state_msg_dict = message_converter.convert_ros_message_to_dictionary(state_msg)
         state_msg_byte = json.dumps(state_msg_dict).encode('utf-8')
