@@ -33,6 +33,7 @@ setup(
             'ackermann_controller = piracer.ackermann_controller:main',
             'autonomy_manager = piracer.autonomy_manager:main',
             'v2x_node = piracer.v2x_node:main',
+            'straight_behavior = piracer.straight_behavior:main'
         ],
     },
 )

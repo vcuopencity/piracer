@@ -72,5 +72,12 @@ def generate_launch_description():
             executable='v2x_node',
             name='v2x_node',
             parameters=[car_config]
+        ),
+        Node(
+            package='piracer',
+            namespace=[LaunchConfiguration('agent_name')],
+            executable='straight_behavior',
+            name='straight_behavior',
+            parameters=[car_config]
         )
     ])

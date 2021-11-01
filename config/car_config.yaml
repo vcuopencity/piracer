@@ -18,3 +18,6 @@ car1:
       ackermann_bridge_output_topic: 'ackermann/out'
       vehicle_length: 20.0
       maximum_velocity: 2.476
+  straight:
+    ros__parameters:
+      velocity: 0.75
