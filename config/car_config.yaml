@@ -12,6 +12,7 @@ car1:
       car_state_output_topic: 'car_state'
       neighbor_list: ['car1', 'car2', 'car3', 'signal1']
       report_frequency: 1.0
+      mqtt_broker_uri: '10.1.1.1'
   ackermann_controller:
     ros__parameters:
       ackermann_bridge_input_topic: 'ackermann/in'
