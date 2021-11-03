@@ -78,7 +78,8 @@ class AckermannController(Node):
         omega = msg.angular.z
         self.get_logger().debug(f'Twist received! Velocity: {velocity} Omega:{omega}')
 
-        if abs(velocity) < 0.04226:
+
+        if abs(velocity) < 0.001:
             velocity = 0.0
             phi = 0.0
         else:
@@ -104,7 +105,7 @@ class AckermannController(Node):
         )
 
         throttle_msg = Throttle()
-        if abs(msg.speed) < 0.04226:
+        if abs(msg.speed) < 0.001:
             throttle_msg.percent = 0.0
         else:
             throttle_msg.percent = self._parse_velocity(msg.speed)
@@ -119,7 +120,7 @@ class AckermannController(Node):
         self.ackermann_pub.publish(msg)
 
     def _parse_velocity(self, velocity):
-        throttle_amount = (velocity + 0.101)/2.39
+        throttle_amount = velocity/self.max_velocity
         return throttle_amount
 
 
