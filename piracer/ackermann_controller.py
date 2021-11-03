@@ -32,6 +32,9 @@ class AckermannController(Node):
         self.declare_parameter('maximum_velocity', 2.5)
         self.max_velocity = self.get_parameter('maximum_velocity').get_parameter_value().double_value
 
+        self.declare_parameter('twist_topic', 'twist_topic')
+        self._twist_topic = self.get_parameter('twist_topic').get_parameter_value().string_value
+
     def _init_sub(self):
         """Subscribe to the ackermann drive bridge."""
         self.ackermann_sub = self.create_subscription(
@@ -42,7 +45,7 @@ class AckermannController(Node):
         )
         self._twist_sub = self.create_subscription(
             msg_type=Twist,
-            topic='twist',
+            topic=self._twist_topic,
             callback=self._twist_callback,
             qos_profile=10,
         )
@@ -71,13 +74,13 @@ class AckermannController(Node):
         """Calculate a new steering angle and throttle amount based on incoming twist message and
         publish them to the steering and throttle nodes.
         """
-        self.get_logger().info('Twist received!')
         velocity = msg.linear.x
         omega = msg.angular.z
+        self.get_logger().debug(f'Twist received! Velocity: {velocity} Omega:{omega}')
 
         if abs(velocity) < 0.04226:
-            velocity = 0
-            phi = 0
+            velocity = 0.0
+            phi = 0.0
         else:
             phi = numpy.arctan((self.vehicle_length*omega)/velocity)
 

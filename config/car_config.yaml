@@ -17,8 +17,10 @@ car1:
     ros__parameters:
       ackermann_bridge_input_topic: 'ackermann/in'
       ackermann_bridge_output_topic: 'ackermann/out'
+      twist_topic: 'twist'
       vehicle_length: 20.0
       maximum_velocity: 2.476
-  straight:
+  straight_behavior:
     ros__parameters:
       velocity: 0.75
+      twist_topic: 'twist'
