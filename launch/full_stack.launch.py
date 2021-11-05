@@ -79,5 +79,12 @@ def generate_launch_description():
             executable='straight_behavior',
             name='straight_behavior',
             parameters=[car_config]
+        ),
+        Node(
+            package='piracer',
+            namespace=[LaunchConfiguration('agent_name')],
+            executable='arc_behavior',
+            name='arc_behavior',
+            parameters=[car_config]
         )
     ])

@@ -24,4 +24,9 @@ car1:
     ros__parameters:
       velocity: 0.75
       twist_topic: 'twist'
-      maximum_velocity: 2.64
+  arc_behavior:
+    ros__parameters:
+      velocity: 0.75
+      steering_angle: 60.0
+      twist_topic: 'twist'
+
