@@ -7,7 +7,7 @@ import rclpy
 
 
 class ArcBehavior(Node):
-    """Drive the vehicle forward at the velocity determined by the parameter when enabled."""
+    """Drive the vehicle at the velocity and angle determined by parameters when enabled."""
 
     def __init__(self):
         super().__init__('arc_behavior')

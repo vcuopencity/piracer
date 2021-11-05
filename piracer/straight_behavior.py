@@ -7,7 +7,7 @@ import rclpy
 
 
 class StraightBehavior(Node):
-    """Drive the vehicle forward at the velocity determined by the parameter when enabled."""
+    """Drive the vehicle at the velocity determined by the parameter when enabled."""
 
     def __init__(self):
         super().__init__('straight_behavior')
