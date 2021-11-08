@@ -14,8 +14,9 @@ class AutonomyManager(Node):
     def __init__(self):
         super().__init__('autonomy_manager')
 
-        self._mode_machine = None
+        self._mode_machine = StateMachine(self)
         self._agent_name = self.get_namespace().lstrip('/')
+        agent_name = 'test'
 
         self._init_params()
         self._init_pub()
@@ -58,31 +59,7 @@ class AutonomyManager(Node):
             {'trigger': 'auto', 'source': '*', 'dest': 'auto'},
             {'trigger': 'experiment', 'source': '*', 'dest': 'experiment'}
         ]
-        self._mode_machine = Machine(model=self, states=states, transitions=transitions, initial='direct')
-
-    # State Machine callbacks ---------------------------------------------------------------------
-    # Direct mode
-    def on_enter_direct(self):
-        self.get_logger().info(f"{self._agent_name} is now entering DIRECT mode.")
-        self.enable_ackermann()
-
-    def on_exit_direct(self):
-        self.get_logger().info(f"{self._agent_name} is now exiting DIRECT mode.")
-        self.disable_ackermann()
-
-    # Auto mode
-    def on_enter_auto(self):
-        self.get_logger().info(f"{self._agent_name} is now entering AUTO mode.")
-
-    def on_exit_auto(self):
-        self.get_logger().info(f"{self._agent_name} is now exiting AUTO mode.")
-
-    # Experiment mode
-    def on_enter_experiment(self):
-        self.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
-
-    def on_exit_experiment(self):
-        self.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
+        machine = Machine(model=self._mode_machine, states=states, transitions=transitions, initial='direct')
 
     # Service callbacks ---------------------------------------------------------------------------
     def enable_ackermann(self):
@@ -98,15 +75,44 @@ class AutonomyManager(Node):
         """Responding to a received command."""
         self.command_pub.publish(msg)
 
-        if msg.operational_mode.lower() == self.state:
-            self.get_logger().info(f"{self._agent_name} is already in {str(self.state.upper())} mode!")
+        if msg.operational_mode.lower() == self._mode_machine.state:
+            self.get_logger().info(f"{self._agent_name} is already in {str(self._mode_machine.state.upper())} mode!")
         elif msg.operational_mode.lower() == 'direct':
-            self.direct()
+            self._mode_machine.direct()
         elif msg.operational_mode.lower() == 'auto':
-            self.auto()
+            self._mode_machine.auto()
         elif msg.operational_mode.lower() == 'experiment':
-            self.experiment()
+            self._mode_machine.experiment()
 
+
+class StateMachine(AutonomyManager):
+    # State Machine callbacks ---------------------------------------------------------------------
+    # Direct mode
+    def __init__(self, autonomy_manager):
+        # super().__init__()
+        self._agent_name = autonomy_manager.agent_name
+
+    def on_enter_direct(self):
+        self.get_logger().info(f"{self._agent_name} is now entering DIRECT mode.")
+        self.enable_ackermann()
+
+    def on_exit_direct(self):
+        AutonomyManager.get_logger().info(f"{self._agent_name} is now exiting DIRECT mode.")
+        AutonomyManager.disable_ackermann()
+
+    # Auto mode
+    def on_enter_auto(self):
+        self.get_logger().info(f"{self._agent_name} is now entering AUTO mode.")
+
+    def on_exit_auto(self):
+        self.get_logger().info(f"{self._agent_name} is now exiting AUTO mode.")
+
+    # Experiment mode
+    def on_enter_experiment(self):
+        self.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
+
+    def on_exit_experiment(self):
+        self.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
 
 def main():
     """Boilerplate ROS node spinup."""
