@@ -52,10 +52,11 @@ class AutonomyManager(Node):
         self.ack_request = Enable.Request()
 
     def _init_state_machine(self):
-        states = ['auto', 'direct']
+        states = ['auto', 'direct', 'experiment']
         transitions = [
             {'trigger': 'direct', 'source': '*', 'dest': 'direct'},
-            {'trigger': 'auto', 'source': '*', 'dest': 'auto'}
+            {'trigger': 'auto', 'source': '*', 'dest': 'auto'},
+            {'trigger': 'experiment', 'source': '*', 'dest': 'experiment'}
         ]
         self._mode_machine = Machine(model=self, states=states, transitions=transitions, initial='direct')
 
@@ -76,6 +77,13 @@ class AutonomyManager(Node):
     def on_exit_auto(self):
         self.get_logger().info(f"{self._agent_name} is now exiting AUTO mode.")
 
+    # Experiment mode
+    def on_enter_experiment(self):
+        self.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
+
+    def on_exit_experiment(self):
+        self.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
+
     # Service callbacks ---------------------------------------------------------------------------
     def enable_ackermann(self):
         self.ack_request.enable = True
@@ -90,16 +98,14 @@ class AutonomyManager(Node):
         """Responding to a received command."""
         self.command_pub.publish(msg)
 
-        if msg.operational_mode.lower() == 'direct':
-            if self.state == 'direct':
-                self.get_logger().info(f"{self._agent_name} is already in DIRECT mode!")
-            else:
-                self.direct()
-        if msg.operational_mode.lower() == 'auto':
-            if self.state == 'auto':
-                self.get_logger().info(f"{self._agent_name} is already in AUTO mode!")
-            else:
-                self.auto()
+        if msg.operational_mode.lower() == self.state:
+            self.get_logger().info(f"{self._agent_name} is already in {str(self.state.upper())} mode!")
+        elif msg.operational_mode.lower() == 'direct':
+            self.direct()
+        elif msg.operational_mode.lower() == 'auto':
+            self.auto()
+        elif msg.operational_mode.lower() == 'experiment':
+            self.experiment()
 
 
 def main():
