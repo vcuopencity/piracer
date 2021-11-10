@@ -15,6 +15,7 @@ class AutonomyManager(Node):
         super().__init__('autonomy_manager')
 
         self._agent_name = self.get_namespace().lstrip('/')
+        self.timer_counter = 0
 
         self._init_params()
         self._init_pub()
@@ -22,7 +23,10 @@ class AutonomyManager(Node):
         self._init_srv()
 
         self._mode_machine = ModeSwitchingMachine(self)
-        self._init_state_machine()
+        self._init_mode_machine()
+
+        self._driving_machine = DrivingMachine(self)
+        self._init_driving_machine()
 
     def _init_params(self):
         self.declare_parameter('cmd_bridge_input_topic', 'control_input_topic')
@@ -52,14 +56,33 @@ class AutonomyManager(Node):
             self.get_logger().info("ackermann_bridge_enable_service not available, waiting...")
         self.ack_request = Enable.Request()
 
-    def _init_state_machine(self):
+        self.straight_behavior_client = self.create_client(Enable, 'straight_behavior_enable_service')
+        while not self.straight_behavior_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("straight_behavior_enable_service not available, waiting...")
+
+        self.behavior_request = Enable.Request()
+
+        self.arc_behavior_client = self.create_client(Enable, 'arc_behavior_enable_service')
+        while not self.arc_behavior_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("arc_behavior_enable_service not available, waiting...")
+
+    def _init_mode_machine(self):
         states = ['auto', 'direct', 'experiment']
         transitions = [
             {'trigger': 'direct', 'source': '*', 'dest': 'direct'},
             {'trigger': 'auto', 'source': '*', 'dest': 'auto'},
             {'trigger': 'experiment', 'source': '*', 'dest': 'experiment'}
         ]
-        self.machine = Machine(model=self._mode_machine, states=states, transitions=transitions, initial='direct')
+        machine = Machine(model=self._mode_machine, states=states, transitions=transitions, initial='direct')
+
+    def _init_driving_machine(self):
+        states = ['stop', 'straight', 'arc']
+        transitions = [
+            {'trigger': 'stop', 'source': '*', 'dest': 'stop'},
+            {'trigger': 'straight', 'source': '*', 'dest': 'straight'},
+            {'trigger': 'arc', 'source': '*', 'dest': 'arc'}
+        ]
+        machine = Machine(model=self._driving_machine, states=states, transitions=transitions, initial='stop')
 
     # Service callbacks ---------------------------------------------------------------------------
     def enable_ackermann(self):
@@ -84,12 +107,20 @@ class AutonomyManager(Node):
         elif msg.operational_mode.lower() == 'experiment':
             self._mode_machine.experiment()
 
+    def experiment_timer(self):
+        self.timer_counter += 1
+        if self.timer_counter % 2 == 0:
+            self._driving_machine.straight()
+        else:
+            self._driving_machine.stop()
+
 
 class ModeSwitchingMachine:
     def __init__(self, autonomy_manager):
         self._autonomy_manager = autonomy_manager
         self._agent_name = self._autonomy_manager._agent_name
 
+    # Direct mode   -----------------------------
     def on_enter_direct(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering DIRECT mode.")
         self._autonomy_manager.enable_ackermann()
@@ -98,19 +129,63 @@ class ModeSwitchingMachine:
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting DIRECT mode.")
         self._autonomy_manager.disable_ackermann()
 
-    # Auto mode
+    # Auto mode     -----------------------------
     def on_enter_auto(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering AUTO mode.")
 
     def on_exit_auto(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting AUTO mode.")
 
-    # Experiment mode
+    # Experiment mode   -------------------------
     def on_enter_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
+        self._autonomy_manager.timer = self._autonomy_manager.create_timer(
+            1, self._autonomy_manager.experiment_timer
+        )
 
     def on_exit_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
+        self._autonomy_manager.timer.destroy()
+        self._autonomy_manager._driving_machine.stop()
+
+
+class DrivingMachine:
+    def __init__(self, autonomy_manager):
+        self._autonomy_manager = autonomy_manager
+        self._agent_name = self._autonomy_manager._agent_name
+
+    # STOP  -------------------------------------
+    def on_enter_stop(self):
+        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering STOP mode.")
+
+    def on_exit_stop(self):
+        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting STOP mode.")
+
+    # STRAIGHT  ---------------------------------
+    def on_enter_straight(self):
+        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering STRAIGHT mode.")
+        self._autonomy_manager.behavior_request.enable = True
+        self._autonomy_manager.future = self._autonomy_manager.straight_behavior_client.call_async(
+            self._autonomy_manager.behavior_request)
+
+    def on_exit_straight(self):
+        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting STRAIGHT mode.")
+        self._autonomy_manager.behavior_request.enable = False
+        self._autonomy_manager.future = self._autonomy_manager.straight_behavior_client.call_async(
+            self._autonomy_manager.behavior_request)
+
+    # ARC   -------------------------------------
+    def on_enter_arc(self):
+        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering ARC mode.")
+        self._autonomy_manager.behavior_request.enable = True
+        self._autonomy_manager.future = self._autonomy_manager.arc_behavior_client.call_async(
+            self._autonomy_manager.behavior_request)
+
+    def on_exit_arc(self):
+        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting ARC mode.")
+        self._autonomy_manager.behavior_request.enable = False
+        self._autonomy_manager.future = self._autonomy_manager.arc_behavior_client.call_async(
+            self._autonomy_manager.behavior_request)
 
 
 def main():
