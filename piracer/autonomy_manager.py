@@ -3,6 +3,8 @@ from cmd_msgs.msg import Command
 from autonomy_mgmt_msgs.srv import Enable
 
 import rclpy
+from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
+from rcl_interfaces.srv import SetParameters
 from rclpy.node import Node
 
 from transitions import Machine
@@ -16,6 +18,7 @@ class AutonomyManager(Node):
 
         self._agent_name = self.get_namespace().lstrip('/')
         self.timer_counter = 0
+        self._direction = True
 
         self._init_params()
         self._init_pub()
@@ -56,6 +59,7 @@ class AutonomyManager(Node):
             self.get_logger().info("ackermann_bridge_enable_service not available, waiting...")
         self.ack_request = Enable.Request()
 
+        # Behavior services
         self.straight_behavior_client = self.create_client(Enable, 'straight_behavior_enable_service')
         while not self.straight_behavior_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("straight_behavior_enable_service not available, waiting...")
@@ -65,6 +69,17 @@ class AutonomyManager(Node):
         self.arc_behavior_client = self.create_client(Enable, 'arc_behavior_enable_service')
         while not self.arc_behavior_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("arc_behavior_enable_service not available, waiting...")
+
+        # Behavior parameter-setting services
+        self.straight_param_client = self.create_client(SetParameters, 'straight_behavior/set_parameters')
+        while not self.straight_param_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("straight_behavior/set_parameters not available, waiting...")
+
+        self.behavior_param_request = SetParameters.Request()
+
+        self.arc_param_client = self.create_client(SetParameters, 'arc_behavior/set_parameters')
+        while not self.arc_behavior_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("arc_behavior/set_parameters not available, waiting...")
 
     def _init_mode_machine(self):
         states = ['auto', 'direct', 'experiment']
@@ -110,9 +125,45 @@ class AutonomyManager(Node):
     def experiment_timer(self):
         self.timer_counter += 1
         if self.timer_counter % 2 == 0:
-            self._driving_machine.straight()
+            if self._direction:
+                self.update_arc_params(-.75, -90.0)
+            else:
+                self.update_arc_params(.75, 90.0)
+            self._direction = not self._direction
+            self._driving_machine.arc()
         else:
             self._driving_machine.stop()
+
+    def update_straight_params(self, velocity):
+        parameter = Parameter()
+        parameter.name = 'velocity'
+        parameter.value.type = ParameterType.PARAMETER_DOUBLE
+        parameter.value.double_value = velocity
+        self.behavior_param_request.parameters.append(parameter)
+
+        self.future = self.straight_param_client.call_async(self.behavior_param_request)
+
+    def update_arc_velocity(self, velocity):
+        parameter = Parameter()
+        parameter.name = 'velocity'
+        parameter.value.type = ParameterType.PARAMETER_DOUBLE
+        parameter.value.double_value = velocity
+        self.behavior_param_request.parameters.append(parameter)
+
+        self.future = self.arc_param_client.call_async(self.behavior_param_request)
+
+    def update_arc_steering_angle(self, velocity):
+        parameter = Parameter()
+        parameter.name = 'steering_angle'
+        parameter.value.type = ParameterType.PARAMETER_DOUBLE
+        parameter.value.double_value = velocity
+        self.behavior_param_request.parameters.append(parameter)
+
+        self.future = self.arc_param_client.call_async(self.behavior_param_request)
+
+    def update_arc_params(self, velocity, steering_angle):
+        self.update_arc_velocity(velocity)
+        self.update_arc_steering_angle(steering_angle)
 
 
 class ModeSwitchingMachine:
