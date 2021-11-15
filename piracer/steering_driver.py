@@ -40,7 +40,7 @@ class SteeringDriver(Node):
     def _msg_cb(self, msg: SteeringAngle):
         angle = min(self.get_parameter('max_angle').value,
                     max(self.get_parameter('min_angle').value,
-                        msg.degree))
+                        msg.radian))
         self.servo.angle = angle + 90
 
 
