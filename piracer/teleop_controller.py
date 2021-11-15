@@ -28,7 +28,7 @@ class TeleopController(Node):
         self.throttle_pub.publish(throttle_msg)
 
         angle_msg = SteeringAngle()
-        angle_msg.degree = - msg.axes[3] * 90
+        angle_msg.radian = - msg.axes[3] * 90
         self.angle_pub.publish(angle_msg)
 
 

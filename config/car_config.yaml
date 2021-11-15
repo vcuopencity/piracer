@@ -5,8 +5,8 @@ car1:
       cmd_bridge_output_topic: 'cmd/out'
   steering_driver:
     ros__parameters:
-      min_angle: -75.0
-      max_angle: 75.0
+      min_angle: -1.309
+      max_angle: 1.309
   v2x_node:
     ros__parameters:
       car_state_output_topic: 'car_state'
