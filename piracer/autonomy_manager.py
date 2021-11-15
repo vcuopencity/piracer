@@ -122,15 +122,21 @@ class AutonomyManager(Node):
         elif msg.operational_mode.lower() == 'experiment':
             self._mode_machine.experiment()
 
-    def experiment_timer(self):
+    def figure_eight_experiment(self):
         self.timer_counter += 1
         if self.timer_counter % 2 == 0:
-            if self._direction:
-                self.update_arc_params(-.75, -90.0)
-            else:
-                self.update_arc_params(.75, 90.0)
-            self._direction = not self._direction
+            self._driving_machine.stop()
+            self.update_arc_params(1.2, 25.0)
             self._driving_machine.arc()
+        else:
+            self._driving_machine.stop()
+            self.update_arc_params(1.2, -25.0)
+            self._driving_machine.arc()
+
+    def straight_experiment(self):
+        self.timer_counter += 1
+        if self.timer_counter % 2 == 0:
+            self._driving_machine.straight()
         else:
             self._driving_machine.stop()
 
@@ -191,12 +197,12 @@ class ModeSwitchingMachine:
     def on_enter_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
         self._autonomy_manager.timer = self._autonomy_manager.create_timer(
-            1, self._autonomy_manager.experiment_timer
+            2, self._autonomy_manager.figure_eight_experiment
         )
 
     def on_exit_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
-        self._autonomy_manager.timer.destroy()
+        self._autonomy_manager.timer.cancel()
         self._autonomy_manager._driving_machine.stop()
 
 
