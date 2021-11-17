@@ -47,6 +47,13 @@ def generate_launch_description():
             }.items()
         ),
         IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/open_loop_control.launch.py']),
+            launch_arguments={
+                'agent_name': LaunchConfiguration('agent_name'),
+                'launch_ackermann': 'false'
+            }.items()
+        ),
+        IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
                 'agent_name': LaunchConfiguration('agent_name')
@@ -71,20 +78,6 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='v2x_node',
             name='v2x_node',
-            parameters=[car_config]
-        ),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('agent_name')],
-            executable='straight_behavior',
-            name='straight_behavior',
-            parameters=[car_config]
-        ),
-        Node(
-            package='piracer',
-            namespace=[LaunchConfiguration('agent_name')],
-            executable='arc_behavior',
-            name='arc_behavior',
             parameters=[car_config]
         )
     ])
