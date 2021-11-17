@@ -123,6 +123,9 @@ class AutonomyManager(Node):
             self._mode_machine.experiment()
 
     def figure_eight_experiment(self):
+        """Switch driving angle between both extremes on alternating calls.
+        For the best figure-8, use a callback period of 2.7s.
+        """
         self.timer_counter += 1
         if self.timer_counter % 2 == 0:
             self._driving_machine.stop()
@@ -134,6 +137,7 @@ class AutonomyManager(Node):
             self._driving_machine.arc()
 
     def straight_experiment(self):
+        """Start and stop the vehicle on alternating calls."""
         self.timer_counter += 1
         if self.timer_counter % 2 == 0:
             self._driving_machine.straight()
@@ -141,6 +145,9 @@ class AutonomyManager(Node):
             self._driving_machine.stop()
 
     def update_straight_params(self, velocity):
+        """Update the velocity parameter of the straight_behavior node by calling its parameter-
+        setting service.
+        """
         parameter = Parameter()
         parameter.name = 'velocity'
         parameter.value.type = ParameterType.PARAMETER_DOUBLE
@@ -150,6 +157,9 @@ class AutonomyManager(Node):
         self.future = self.straight_param_client.call_async(self.behavior_param_request)
 
     def update_arc_velocity(self, velocity):
+        """Update the velocity parameter of the arc_behavior node by calling its parameter-
+        setting service.
+        """
         parameter = Parameter()
         parameter.name = 'velocity'
         parameter.value.type = ParameterType.PARAMETER_DOUBLE
@@ -159,6 +169,9 @@ class AutonomyManager(Node):
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
 
     def update_arc_steering_angle(self, velocity):
+        """Update the steering_angle parameter of the arc_behavior node by calling its parameter-
+        setting service.
+        """
         parameter = Parameter()
         parameter.name = 'steering_angle'
         parameter.value.type = ParameterType.PARAMETER_DOUBLE
@@ -168,6 +181,9 @@ class AutonomyManager(Node):
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
 
     def update_arc_params(self, velocity, steering_angle):
+        """Update the velocity AND steering_angle parameters of the arc_behavior node by calling
+        those respective methods.
+        """
         self.update_arc_velocity(velocity)
         self.update_arc_steering_angle(steering_angle)
 
@@ -197,7 +213,7 @@ class ModeSwitchingMachine:
     def on_enter_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
         self._autonomy_manager.timer = self._autonomy_manager.create_timer(
-            2, self._autonomy_manager.figure_eight_experiment
+            2.7, self._autonomy_manager.figure_eight_experiment
         )
 
     def on_exit_experiment(self):
