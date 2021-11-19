@@ -61,5 +61,12 @@ def generate_launch_description():
                 'agent_name': LaunchConfiguration('agent_name')
             }.items(),
             condition=IfCondition(launch_bridge)
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/twist_bridge.launch.py']),
+            launch_arguments={
+                'agent_name': LaunchConfiguration('agent_name')
+            }.items(),
+            condition=IfCondition(launch_bridge)
         )
     ])

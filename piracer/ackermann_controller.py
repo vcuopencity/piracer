@@ -26,6 +26,12 @@ class AckermannController(Node):
         self.declare_parameter('ackermann_bridge_output_topic', 'ros_sub_top')
         self.output_topic = self.get_parameter('ackermann_bridge_output_topic').get_parameter_value().string_value
 
+        self.declare_parameter('twist_bridge_input_topic', 'ros_pub_top')
+        self.twist_input_topic = self.get_parameter('twist_bridge_input_topic').get_parameter_value().string_value
+
+        self.declare_parameter('twist_bridge_output_topic', 'ros_sub_top')
+        self.twist_output_topic = self.get_parameter('twist_bridge_output_topic').get_parameter_value().string_value
+
         self.declare_parameter('vehicle_length', 1.0)
         self.vehicle_length = self.get_parameter('vehicle_length').get_parameter_value().double_value
 
@@ -42,7 +48,7 @@ class AckermannController(Node):
         )
         self._twist_sub = self.create_subscription(
             msg_type=Twist,
-            topic='twist',
+            topic=self.twist_input_topic,
             callback=self._twist_callback,
             qos_profile=10,
         )
@@ -54,7 +60,11 @@ class AckermannController(Node):
             topic=self.output_topic,
             qos_profile=10,
         )
-
+        self.twist_pub = self.create_publisher(
+            msg_type=Twist,
+            topic=self.twist_output_topic,
+            qos_profile=10,
+        )
         # Publishers for hardware nodes
         self.steering_pub = self.create_publisher(
             msg_type=SteeringAngle,
@@ -89,6 +99,8 @@ class AckermannController(Node):
 
         self.throttle_pub.publish(throttle_msg)
         self.steering_pub.publish(steer_msg)
+
+        self.twist_pub.publish(msg)
 
     def ackermann_callback(self, msg):
         """Publish speed and steering angle to their appropriate topics."""
