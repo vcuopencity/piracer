@@ -43,20 +43,20 @@ class AutonomyManager(Node):
         machine = Machine(model=self, states=states, transitions=transitions, initial='direct')
 
         # Service client
-        self.enable_ackermann_client = self.create_client(Enable, 'ackermann_bridge_enable_service')
-        while not self.enable_ackermann_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("ackermann_bridge_enable_service not available, waiting...")
+        self.enable_twist_client = self.create_client(Enable, 'twist_bridge_enable_service')
+        while not self.enable_twist_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("twist_bridge_enable_service not available, waiting...")
         self.ack_request = Enable.Request()
 
     # State Machine callbacks ---------------------------------------------------------------------
     # Direct mode
     def on_enter_direct(self):
         self.get_logger().info("Car is now entering DIRECT mode.")
-        self.enable_ackermann()
+        self.enable_twist()
 
     def on_exit_direct(self):
         self.get_logger().info("Car is now exiting DIRECT mode.")
-        self.disable_ackermann()
+        self.disable_twist()
 
     # Auto mode
     def on_enter_auto(self):
@@ -66,13 +66,13 @@ class AutonomyManager(Node):
         self.get_logger().info("Car is now exiting AUTO mode.")
 
     # Service callbacks ---------------------------------------------------------------------------
-    def enable_ackermann(self):
+    def enable_twist(self):
         self.ack_request.enable = True
-        self.future = self.enable_ackermann_client.call_async(self.ack_request)
+        self.future = self.enable_twist_client.call_async(self.ack_request)
 
-    def disable_ackermann(self):
+    def disable_twist(self):
         self.ack_request.enable = False
-        self.future = self.enable_ackermann_client.call_async(self.ack_request)
+        self.future = self.enable_twist_client.call_async(self.ack_request)
 
     # Subscriber callbacks ------------------------------------------------------------------------
     def command_callback(self, msg):
