@@ -95,7 +95,7 @@ class AckermannController(Node):
         throttle_msg.percent = self._parse_velocity(velocity)
 
         steer_msg = SteeringAngle()
-        steer_msg.degree = phi
+        steer_msg.radian = phi
 
         self.throttle_pub.publish(throttle_msg)
         self.steering_pub.publish(steer_msg)
@@ -120,7 +120,7 @@ class AckermannController(Node):
         self.get_logger().info(f'Publishing throttle: {throttle_msg.percent}')
 
         steer_msg = SteeringAngle()
-        steer_msg.degree = msg.steering_angle
+        steer_msg.radian = msg.steering_angle
 
         self.throttle_pub.publish(throttle_msg)
         self.steering_pub.publish(steer_msg)
