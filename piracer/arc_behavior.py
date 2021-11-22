@@ -22,7 +22,7 @@ class ArcBehavior(Node):
         self.declare_parameter('velocity', 1.0)
         # Velocity not set to a member variable here because it is meant to be changed after initialization,
         # use self._get_velocity().
-        self.declare_parameter('steering_angle', 45.0)
+        self.declare_parameter('steering_angle', 0.25)
         # Steering angle not set to a member variable here because it is meant to be changed after initialization,
         # use self._get_steering_angle().
 
@@ -48,7 +48,7 @@ class ArcBehavior(Node):
             self._twist_pub.publish(twist_msg)
             response.result = True
             response.status = f"{self._agent_name} is now moving at {self._get_velocity()} m/s at " \
-                              f"{self._get_steering_angle()} degrees."
+                              f"{self._get_steering_angle()} radians."
         else:
             twist_msg.linear.x = 0.0
             twist_msg.angular.z = 0.0
