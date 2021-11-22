@@ -26,8 +26,9 @@ anything, but for practical purposes it should never need to be launched by itse
 
 ### Launch file options
 1. `full_stack.launch.py`: Launches all possible control modes at once, as well as the autonomy_manager.
-1. `ackermann_control.launch.py`: For use with the ackermann_drive mode of the mqtt_bridge package.
-1. `teleop_control.launch.py`: For use with a gamepad / controller.
+2. `open_loop_control.py`: Launches the open loop controllers and the ackermann_controller node.
+3. `ackermann_control.launch.py`: For use with the ackermann_drive mode of the mqtt_bridge package.
+4. `teleop_control.launch.py`: For use with a gamepad / controller.
 
 ### Command-line arguments
 1. `agent_name`: Sets the namespace for all the nodes and topics. Necessary to set when launching multiple cars on the
@@ -66,8 +67,11 @@ case-insensitive.
    `ackermann_drive` bridge and parsed by the `ackermann_controller` node.
    * **Default**: this is the state every car is in on launch
    * Enabled via sending the string `direct` through the command bridge
-1. `auto`: Does nothing as currently implemented.
+2. `auto`: Does nothing as currently implemented.
    * Enabled via sending the string `auto` through the command bridge
+3. `experiment`: Starts a ROS timer, which then controls the vehicle using a state machine and the open-loop
+controllers `straight_behavior` and `arc_behavior`.
+   * Enabled via sending the string `experiment` through the command bridge
    
 ### Bridges
 The following are bridges from the `mqtt_bridge` package that must be launched and in the appropriate namespace (have 

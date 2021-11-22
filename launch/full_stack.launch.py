@@ -47,6 +47,13 @@ def generate_launch_description():
             }.items()
         ),
         IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/open_loop_control.launch.py']),
+            launch_arguments={
+                'agent_name': LaunchConfiguration('agent_name'),
+                'launch_ackermann': 'false'
+            }.items()
+        ),
+        IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
                 'agent_name': LaunchConfiguration('agent_name')

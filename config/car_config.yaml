@@ -5,8 +5,8 @@ car1:
       cmd_bridge_output_topic: 'cmd/out'
   steering_driver:
     ros__parameters:
-      min_angle: -75.0
-      max_angle: 75.0
+      min_angle: -1.309
+      max_angle: 1.309
   v2x_node:
     ros__parameters:
       car_state_output_topic: 'car_state'
@@ -17,3 +17,16 @@ car1:
     ros__parameters:
       ackermann_bridge_input_topic: 'ackermann/in'
       ackermann_bridge_output_topic: 'ackermann/out'
+      twist_topic: 'twist'
+      vehicle_length: 0.24
+      maximum_velocity: 2.64
+  straight_behavior:
+    ros__parameters:
+      velocity: 0.75
+      twist_topic: 'twist'
+  arc_behavior:
+    ros__parameters:
+      velocity: 0.75
+      steering_angle: 0.45
+      twist_topic: 'twist'
+
