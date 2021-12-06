@@ -35,10 +35,10 @@ class AckermannController(Node):
         self.declare_parameter('max_velocity', 2.5)
         self.max_velocity = self.get_parameter('max_velocity').get_parameter_value().double_value
 
-        self.declare_parameter('min_velocity', 2.5)
+        self.declare_parameter('min_velocity', 0.001)
         self.min_velocity = self.get_parameter('min_velocity').get_parameter_value().double_value
 
-        self.declare_parameter('min_omega', 2.5)
+        self.declare_parameter('min_omega', 0.001)
         self.min_omega = self.get_parameter('min_omega').get_parameter_value().double_value
 
     def _init_sub(self):
