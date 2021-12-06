@@ -54,9 +54,9 @@ class AutonomyManager(Node):
         )
 
     def _init_srv(self):
-        self.enable_ackermann_client = self.create_client(Enable, 'ackermann_bridge_enable_service')
-        while not self.enable_ackermann_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("ackermann_bridge_enable_service not available, waiting...")
+        self.enable_twist_client = self.create_client(Enable, 'twist_bridge_enable_service')
+        while not self.enable_twist_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("twist_bridge_enable_service not available, waiting...")
         self.ack_request = Enable.Request()
 
         # Behavior services
@@ -100,13 +100,13 @@ class AutonomyManager(Node):
         machine = Machine(model=self._driving_machine, states=states, transitions=transitions, initial='stop')
 
     # Service callbacks ---------------------------------------------------------------------------
-    def enable_ackermann(self):
+    def enable_twist(self):
         self.ack_request.enable = True
-        self.future = self.enable_ackermann_client.call_async(self.ack_request)
+        self.future = self.enable_twist_client.call_async(self.ack_request)
 
-    def disable_ackermann(self):
+    def disable_twist(self):
         self.ack_request.enable = False
-        self.future = self.enable_ackermann_client.call_async(self.ack_request)
+        self.future = self.enable_twist_client.call_async(self.ack_request)
 
     # Subscriber callbacks ------------------------------------------------------------------------
     def command_callback(self, msg):
@@ -196,11 +196,11 @@ class ModeSwitchingMachine:
     # Direct mode   -----------------------------
     def on_enter_direct(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering DIRECT mode.")
-        self._autonomy_manager.enable_ackermann()
+        self._autonomy_manager.enable_twist()
 
     def on_exit_direct(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting DIRECT mode.")
-        self._autonomy_manager.disable_ackermann()
+        self._autonomy_manager.disable_twist()
 
     # Auto mode     -----------------------------
     def on_enter_auto(self):
