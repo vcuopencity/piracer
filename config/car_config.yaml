@@ -19,4 +19,6 @@ car1:
       twist_bridge_input_topic: 'twist/in'
       twist_bridge_output_topic: 'twist/out'
       vehicle_length: 20.0
-      maximum_velocity: 2.64
+      max_velocity: 2.64
+      min_velocity: 0.01
+      min_omega: 0.01
