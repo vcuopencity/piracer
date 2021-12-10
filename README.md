@@ -27,7 +27,7 @@ anything, but for practical purposes it should never need to be launched by itse
 ### Launch file options
 1. `full_stack.launch.py`: Launches all possible control modes at once, as well as the autonomy_manager.
 2. `open_loop_control.py`: Launches the open loop controllers and the ackermann_controller node.
-3. `ackermann_control.launch.py`: For use with the ackermann_drive mode of the mqtt_bridge package.
+3. `ackermann_control.launch.py`: For use with the twist mode of the mqtt_bridge package.
 4. `teleop_control.launch.py`: For use with a gamepad / controller.
 
 ### Command-line arguments
@@ -63,8 +63,8 @@ The following are the currently implemented control modes. Switching between the
 node, using ROS2 services. The commands from the `command` bridge to enable these modes are strings and are 
 case-insensitive.
 
-1. `direct`: `ackermann_drive` messages containing steering_angle and throttle commands are sent from the 
-   `ackermann_drive` bridge and parsed by the `ackermann_controller` node.
+1. `direct`: `twist` messages containing steering_angle and throttle commands are sent from the 
+   `twist` bridge and parsed by the `ackermann_controller` node.
    * **Default**: this is the state every car is in on launch
    * Enabled via sending the string `direct` through the command bridge
 2. `auto`: Does nothing as currently implemented.
@@ -78,8 +78,8 @@ The following are bridges from the `mqtt_bridge` package that must be launched a
 the same `agent_name`) for cars to function  properly for `direct` mode and mode switching. They are automatically
 launched as needed unless `launch_bridge` is set to `False`.
 
-1. `ackermann_drive`: sends `ackermann_drive` messages to the `ackermann_controller` node while the car is in `direct` mode
-   * As the `autonomy_mode` node relies on a service that lives in the `ackermann_drive` bridge to enable / disable 
-     `direct` mode, it hang until the `ackermann_drive` bridge is launched, outputting to the logger that it is
+1. `twist`: sends `twist` messages to the `ackermann_controller` node while the car is in `direct` mode
+   * As the `autonomy_mode` node relies on a service that lives in the `twist` bridge to enable / disable 
+     `direct` mode, it hangs until the `twist` bridge is launched, outputting to the logger that it is
      waiting for the service to be available.
 1. `command`: allows for mode switching, as previously described in the [Control Modes](#control-modes) section.
