@@ -12,7 +12,6 @@
   <depend>piracer_msgs</depend>
   <depend>rclcpy</depend>
   <depend>transitions</depend>
-  <depend>v4l2_camera</depend>
   <depend>ros2_message_converter</depend>
   <depend>opencity_utils</depend>
   <depend>carma_v2x_msgs</depend>
