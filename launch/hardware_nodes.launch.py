@@ -41,11 +41,5 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='power_monitor_driver',
             name='power_monitor_driver'
-        ),
-        Node(
-            package='v4l2_camera',
-            namespace=[LaunchConfiguration('agent_name')],
-            executable='v4l2_camera_node',
-            name='picamera_driver'
         )
     ])
