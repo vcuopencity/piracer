@@ -90,7 +90,9 @@ class AckermannController(Node):
         self.get_logger().debug(f'Twist received! Velocity: {velocity} Omega:{omega}')
 
 
-        if abs(velocity) < self.min_velocity or abs(omega) < self.min_omega:
+        if abs(velocity) > self.min_velocity and abs(omega) < self.min_omega:
+            phi = 0.0
+        elif abs(velocity) < self.min_velocity and abs(omega) < self.min_omega:
             velocity = 0.0
             phi = 0.0
         else:
