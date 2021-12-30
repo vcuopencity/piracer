@@ -32,3 +32,6 @@ car1:
       velocity: 0.75
       steering_angle: 0.45
       twist_topic: 'twist/in'
+  bno055_driver:
+    ros__parameters:
+      imu_topic: "example/imu"
