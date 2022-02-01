@@ -18,6 +18,8 @@ def generate_launch_description():
     """
     car_config = join(get_package_share_directory('piracer'),
                       'config', 'car_config.yaml')
+    ekf_config = join(get_package_share_directory('piracer'),
+                      'config', 'ekf_config.yaml')
     piracer_launch_directory = get_package_share_directory('piracer')
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
     launch_bridge = LaunchConfiguration('launch_bridge')
@@ -79,5 +81,13 @@ def generate_launch_description():
             executable='v2x_node',
             name='v2x_node',
             parameters=[car_config]
+        ),
+        Node(
+            package='robot_localization',
+            namespace=[LaunchConfiguration('agent_name')],
+            executable='ekf_node',
+            name='ekf_filter_node',
+            output='screen',
+            parameters=[ekf_config]
         )
     ])
