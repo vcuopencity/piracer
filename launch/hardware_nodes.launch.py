@@ -41,12 +41,5 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='power_monitor_driver',
             name='power_monitor_driver'
-        ),
-        Node(
-            package='bno055_driver',
-            namespace=[LaunchConfiguration('agent_name')],
-            executable='bno055_driver',
-            name='bno055_driver',
-            parameters=[car_config]
         )
     ])

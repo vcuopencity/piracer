@@ -24,12 +24,6 @@ def generate_launch_description():
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
     launch_bridge = LaunchConfiguration('launch_bridge')
 
-    urdf_file_name = 'piracer_urdf.xml'
-    urdf = join(get_package_share_directory('piracer'),
-                      'config', urdf_file_name)
-    with open(urdf, 'r') as infp:
-        robot_desc = infp.read()
-
     return LaunchDescription([
         DeclareLaunchArgument(
             'agent_name',
@@ -41,7 +35,6 @@ def generate_launch_description():
             description='Determinds if appropriate bridge files are launched from the mqtt_bridge package.'
         ),
         IncludeLaunchDescription(
-
             PythonLaunchDescriptionSource([piracer_launch_directory, '/ackermann_control.launch.py']),
             launch_arguments={
                 'agent_name': LaunchConfiguration('agent_name'),
@@ -69,6 +62,12 @@ def generate_launch_description():
             }.items(),
         ),
         IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/localization.launch.py']),
+            launch_arguments={
+                'agent_name': LaunchConfiguration('agent_name')
+            }.items(),
+        ),
+        IncludeLaunchDescription(
             PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/command_bridge.launch.py']),
             launch_arguments={
                 'agent_name': LaunchConfiguration('agent_name')
@@ -88,23 +87,5 @@ def generate_launch_description():
             executable='v2x_node',
             name='v2x_node',
             parameters=[car_config]
-        ),
-        Node(
-            package='robot_localization',
-            namespace=[LaunchConfiguration('agent_name')],
-            executable='ekf_node',
-            name='ekf_filter_node',
-            output='screen',
-            parameters=[ekf_config]
-        ),
-        Node(
-            package='robot_state_publisher',
-            namespace=[LaunchConfiguration('agent_name')],
-            executable='robot_state_publisher',
-            name='robot_state_publisher',
-            output='screen',
-            # parameters=[{'use_sim_time': use_sim_time, 'robot_description': robot_desc}],
-            parameters=[{'robot_description': robot_desc}],
-            arguments=[urdf]
         )
     ])
