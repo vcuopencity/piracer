@@ -23,6 +23,13 @@ def generate_launch_description():
     piracer_launch_directory = get_package_share_directory('piracer')
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
     launch_bridge = LaunchConfiguration('launch_bridge')
+
+    urdf_file_name = 'piracer_urdf.xml'
+    urdf = join(get_package_share_directory('piracer'),
+                      'config', urdf_file_name)
+    with open(urdf, 'r') as infp:
+        robot_desc = infp.read()
+
     return LaunchDescription([
         DeclareLaunchArgument(
             'agent_name',
@@ -89,5 +96,15 @@ def generate_launch_description():
             name='ekf_filter_node',
             output='screen',
             parameters=[ekf_config]
+        ),
+        Node(
+            package='robot_state_publisher',
+            namespace=[LaunchConfiguration('agent_name')],
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            output='screen',
+            # parameters=[{'use_sim_time': use_sim_time, 'robot_description': robot_desc}],
+            parameters=[{'robot_description': robot_desc}],
+            arguments=[urdf]
         )
     ])

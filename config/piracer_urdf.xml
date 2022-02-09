@@ -1,0 +1,18 @@
+<!-- Minimal URDF for a PiRacer. -->
+<?xml version="1.0"?>
+  <robot name="piracer">
+
+    <link name="base_link">
+    </link>
+
+    <joint name="imu" type="fixed">
+      <parent link="base_link"/>
+      <child link="imu_link"/>
+      <origin xyz="0.275 0 0.165"/>  //HERE
+    </joint>
+
+    <link name="imu_link">
+    </link>
+
+
+  </robot>
