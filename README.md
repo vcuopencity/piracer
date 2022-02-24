@@ -24,6 +24,18 @@ anything, but for practical purposes it should never need to be launched by itse
 
 ![Launch file hierarchy](assets/launch_hierarchy.jpg)
 
+```mermaid
+flowchart TD
+    full_stack(full_stack) --> ackermann_control(ackermann_control)
+    full_stack(full_stack) --> hardware_nodes(hardware_nodes)
+        hardware_nodes --> display_driver([display_driver])
+        hardware_nodes --> power_monitor_driver([power_monitor_driver])
+        hardware_nodes --> steering_driver([steering_driver])
+        hardware_nodes --> throttle_driver([throttle_driver])
+    full_stack(full_stack) --> open_loop_control(open_loop_control)
+    full_stack(full_stack) --> teleop_control(teleop_control)
+```
+
 ### Launch file options
 1. `full_stack.launch.py`: Launches all possible control modes at once, as well as the autonomy_manager.
 2. `open_loop_control.py`: Launches the open loop controllers and the ackermann_controller node.
