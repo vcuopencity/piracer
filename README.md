@@ -25,15 +25,21 @@ anything, but for practical purposes it should never need to be launched by itse
 ![Launch file hierarchy](assets/launch_hierarchy.jpg)
 
 ```mermaid
-flowchart TD
-    full_stack(full_stack) --> ackermann_control(ackermann_control)
-    full_stack(full_stack) --> hardware_nodes(hardware_nodes)
-        hardware_nodes --> display_driver([display_driver])
-        hardware_nodes --> power_monitor_driver([power_monitor_driver])
-        hardware_nodes --> steering_driver([steering_driver])
-        hardware_nodes --> throttle_driver([throttle_driver])
-    full_stack(full_stack) --> open_loop_control(open_loop_control)
-    full_stack(full_stack) --> teleop_control(teleop_control)
+    flowchart TD
+        full_stack(full_stack) --> ackermann_control(ackermann_control)
+        full_stack(full_stack) --> hardware_nodes(hardware_nodes)
+            hardware_nodes --> display_driver([display_driver])
+            hardware_nodes --> power_monitor_driver([power_monitor_driver])
+            hardware_nodes --> steering_driver([steering_driver])
+            hardware_nodes --> throttle_driver([throttle_driver])
+        full_stack(full_stack) --> open_loop_control(open_loop_control)
+        full_stack(full_stack) --> teleop_control(teleop_control)
+    
+        classDef launch_file fill:#D5E8D4,stroke:#82B366,color:black;
+        classDef nodes fill:#FFFFFF,stroke:#000000,color:black;
+        
+        class display_driver,power_monitor_driver,steering_driver,throttle_driver nodes;
+        class ackermann_control,hardware_nodes,open_loop_control,teleop_control,full_stack launch_file;
 ```
 
 ### Launch file options
