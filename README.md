@@ -28,28 +28,37 @@ anything, but for practical purposes it should never need to be launched by itse
     flowchart TD
         full_stack(full_stack) --> ackermann_control(ackermann_control)
             ackermann_control -->|launch_hardware| hardware_nodes
+        subgraph Ackermann
             ackermann_control --> ackermann_controller([ackermann_controller])
             ackermann_control -->|launch_bridge| twist_bridge(twist_bridge)
-        
+        end
+
         full_stack --> hardware_nodes(hardware_nodes)
+        subgraph Hardware
             hardware_nodes --> display_driver([display_driver])
             hardware_nodes --> power_monitor_driver([power_monitor_driver])
             hardware_nodes --> steering_driver([steering_driver])
             hardware_nodes --> throttle_driver([throttle_driver])
+        end
         
         full_stack --> open_loop_control(open_loop_control)
+        subgraph Open-Loop Controls
             open_loop_control -->|launch_ackermann| ackermann_control
             open_loop_control --> arc_behavior([arc_behavior])
             open_loop_control --> straight_behavior([straight_behavior])
+        end
         
         full_stack --> teleop_control(teleop_control)
             teleop_control -->|launch_hardware|hardware_nodes
+        subgraph Teleop
             teleop_control --> teleop_controller([teleop_controller])
+        end
         
+        subgraph Autonomy
         full_stack --> v2x_node([v2x_node])
         full_stack --> autonomy_manager([autonomy_manager])
-
         full_stack -->|launch_bridge|control_bridge(control_bridge)
+        end
     
         classDef launch_file fill:#D5E8D4,stroke:#82B366,color:black;
         classDef bridge_launch_file fill:#DAE8FC,stroke:#6C8EBF,color:black;
