@@ -27,19 +27,40 @@ anything, but for practical purposes it should never need to be launched by itse
 ```mermaid
     flowchart TD
         full_stack(full_stack) --> ackermann_control(ackermann_control)
-        full_stack(full_stack) --> hardware_nodes(hardware_nodes)
+            ackermann_control -->|launch_hardware| hardware_nodes
+            ackermann_control --> ackermann_controller([ackermann_controller])
+            ackermann_control -->|launch_bridge| twist_bridge(twist_bridge)
+        
+        full_stack --> hardware_nodes(hardware_nodes)
             hardware_nodes --> display_driver([display_driver])
             hardware_nodes --> power_monitor_driver([power_monitor_driver])
             hardware_nodes --> steering_driver([steering_driver])
             hardware_nodes --> throttle_driver([throttle_driver])
-        full_stack(full_stack) --> open_loop_control(open_loop_control)
-        full_stack(full_stack) --> teleop_control(teleop_control)
+        
+        full_stack --> open_loop_control(open_loop_control)
+            open_loop_control -->|launch_ackermann| ackermann_control
+            open_loop_control --> arc_behavior([arc_behavior])
+            open_loop_control --> straight_behavior([straight_behavior])
+        
+        full_stack --> teleop_control(teleop_control)
+            teleop_control -->|launch_hardware|hardware_nodes
+            teleop_control --> teleop_controller([teleop_controller])
+        
+        full_stack --> v2x_node([v2x_node])
+        full_stack --> autonomy_manager([autonomy_manager])
+
+        full_stack -->|launch_bridge|control_bridge(control_bridge)
     
         classDef launch_file fill:#D5E8D4,stroke:#82B366,color:black;
+        classDef bridge_launch_file fill:#DAE8FC,stroke:#6C8EBF,color:black;
         classDef nodes fill:#FFFFFF,stroke:#000000,color:black;
         
-        class display_driver,power_monitor_driver,steering_driver,throttle_driver nodes;
+        class display_driver,power_monitor_driver,steering_driver,throttle_driver,ackermann_controller,teleop_controller,arc_behavior,straight_behavior,v2x_node,autonomy_manager nodes;
         class ackermann_control,hardware_nodes,open_loop_control,teleop_control,full_stack launch_file;
+        class twist_bridge,control_bridge bridge_launch_file;
+
+        %% the only way to style links is by manually selecting each
+        %%linkStyle 3 stroke:blue;
 ```
 
 ### Launch file options
