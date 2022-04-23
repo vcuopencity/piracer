@@ -13,6 +13,7 @@ from PIL import ImageFont
 
 
 class DisplayDriver(Node):
+    """Output IP address and ROS2 namespace to SSD1306_I2C display over I2C."""
     def __init__(self):
         super(DisplayDriver, self).__init__('display_driver')
 
