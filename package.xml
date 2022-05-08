@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>ROS2 package for Waveshare PiRacer</description>
   <maintainer email="morrissettal2@vcu.edu">Adam Morrissett</maintainer>
+  <maintainer email="marshallpt@vcu.edu">Patrick Marshall</maintainer>
   <license>TODO: License declaration</license>
 
   <depend>autonomy_mgmt_msgs</depend>

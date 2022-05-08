@@ -12,6 +12,7 @@ from adafruit_motor.servo import Servo
 
 
 class SteeringDriver(Node):
+    """Sub to /agent/angle and convert radians to degrees to output to PCA9685 servo via I2C."""
     def __init__(self):
         super(SteeringDriver, self).__init__('steering_driver')
 

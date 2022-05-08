@@ -6,6 +6,7 @@ from piracer_msgs.msg import SteeringAngle, Throttle
 
 
 class TeleopController(Node):
+    """Sub to /agent/joy and output /agent/throttle and /agent/angle commands."""
     def __init__(self):
         super(TeleopController, self).__init__('teleop_controller')
 

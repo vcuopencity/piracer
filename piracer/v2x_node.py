@@ -13,8 +13,9 @@ import rclpy
 
 
 class V2xNode(Node):
-    """Report state of car and receive states of other agents. All states are stored in _agent_states in their
-    respective agent information types. Currently, only CarInfo is implemented.
+    """Report state of car and receive states of other agents over MQTT. All states are stored in
+    _agent_states in their respective agent information types, currently implemented: car_state
+    and signal_state.
     """
 
     def __init__(self):
