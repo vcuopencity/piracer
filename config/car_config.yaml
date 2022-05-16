@@ -7,6 +7,10 @@ car1:
     ros__parameters:
       min_angle: -1.309
       max_angle: 1.309
+  throttle_driver:
+    ros__parameters:
+      min_throttle: -1.0
+      max_throttle: 1.0
   v2x_node:
     ros__parameters:
       car_state_output_topic: 'car_state'
@@ -15,8 +19,6 @@ car1:
       mqtt_broker_uri: '10.1.1.1'
   ackermann_controller:
     ros__parameters:
-      ackermann_bridge_input_topic: 'ackermann/in'
-      ackermann_bridge_output_topic: 'ackermann/out'
       twist_bridge_input_topic: 'twist/in'
       twist_bridge_output_topic: 'twist/out'
       vehicle_length: 0.24
