@@ -59,7 +59,7 @@ car1:
       twist_topic: 'twist/in'
   bno055_driver:
     ros__parameters:
-#      string: topic for IMU msg to be published, default = `default_imu_topic`
-      imu_topic: "example/imu"
+#      string: topic for IMU msg to be published, default = `imu`
+      imu_topic: "imu"
 #      double: rate for imu msg to be published in HZ, default = 50.0
-      imu_rate: 5.0
+      imu_rate: 50.0
