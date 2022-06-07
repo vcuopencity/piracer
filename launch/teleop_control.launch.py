@@ -1,5 +1,6 @@
 # Standard library imports
 from os.path import join
+from os import environ
 
 # Third-party imports
 from ament_index_python.packages import get_package_share_directory
@@ -17,13 +18,9 @@ def generate_launch_description():
     """
     launch_directory = get_package_share_directory('piracer')
     launch_hardware = LaunchConfiguration('launch_hardware')
+    agent_name = "car" + environ['CAR_ID']
 
     return LaunchDescription([
-        DeclareLaunchArgument(
-            'agent_name',
-            default_value='car1',
-            description='Sets the namespace for this car.'
-        ),
         DeclareLaunchArgument(
             'launch_hardware',
             default_value='True',
@@ -31,14 +28,11 @@ def generate_launch_description():
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([launch_directory, '/hardware_nodes.launch.py']),
-            launch_arguments={
-                'agent_name': LaunchConfiguration('agent_name')
-            }.items(),
             condition=IfCondition(launch_hardware)
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('agent_name')],
+            namespace=agent_name,
             executable='teleop_controller',
             name='teleop_controller'
         )
