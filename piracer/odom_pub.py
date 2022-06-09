@@ -9,7 +9,7 @@ from os import environ
 
 class PublishOdom(Node):
     def __init__(self):
-        super().__init__('vive_tracker')
+        super().__init__('odom_pub')
 
         # Declaring parameters
         self.declare_parameter('imu_topic', 'imu')
@@ -40,20 +40,15 @@ class PublishOdom(Node):
         self.imu = Imu()
         self.vive = Odometry()
 
-        self.x_offset = -0.09377345442771912
-        self.y_offset = -0.9834375381469727
-        self.z_offset = -3.0118250846862793
-
-
     def _publish_odom_msg(self):
 
         odomMsg = Odometry()
         odomMsg.header.stamp = self.get_clock().now().to_msg()
         odomMsg.header.frame_id = self.car_id + '_base_link'
 
-        odomMsg.pose.pose.position.x = float(self.vive.pose.pose.position.x - self.x_offset)
-        odomMsg.pose.pose.position.y = float(self.vive.pose.pose.position.y - self.y_offset)
-        odomMsg.pose.pose.position.z = float(self.vive.pose.pose.position.z - self.z_offset)
+        odomMsg.pose.pose.position.x = float(self.vive.pose.pose.position.x)
+        odomMsg.pose.pose.position.y = float(self.vive.pose.pose.position.y)
+        odomMsg.pose.pose.position.z = float(self.vive.pose.pose.position.z)
 
         odomMsg.pose.pose.orientation.w = float(self.imu.orientation.w)
         odomMsg.pose.pose.orientation.x = float(self.imu.orientation.x)
@@ -76,9 +71,9 @@ class PublishOdom(Node):
         t.header.frame_id = 'odom'
         t.child_frame_id = self.car_id + '_base_link'
 
-        t.transform.translation.x = float(self.vive.pose.pose.position.x - self.x_offset)
-        t.transform.translation.y = float(self.vive.pose.pose.position.y - self.y_offset)
-        t.transform.translation.z = float(self.vive.pose.pose.position.z - self.z_offset)
+        t.transform.translation.x = float(self.vive.pose.pose.position.x)
+        t.transform.translation.y = float(self.vive.pose.pose.position.y)
+        t.transform.translation.z = float(self.vive.pose.pose.position.z)
 
         t.transform.rotation.w = float(self.imu.orientation.w)
         t.transform.rotation.x = float(self.imu.orientation.x)
@@ -97,9 +92,9 @@ class PublishOdom(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    vive_tracker = PublishOdom()
-    rclpy.spin(vive_tracker)
-    vive_tracker.destroy_node()
+    odom_pub = PublishOdom()
+    rclpy.spin(odom_pub)
+    odom_pub.destroy_node()
     rclpy.shutdown()
 
 

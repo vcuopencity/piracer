@@ -50,5 +50,12 @@ def generate_launch_description():
             executable='bno055_driver',
             name='bno055_driver',
             parameters=[car_config]
+        ),
+        Node(
+            package='piracer',
+            namespace=agent_name,
+            executable='odom_pub',
+            name='odom_pub',
+            parameters=[car_config]
         )
     ])
