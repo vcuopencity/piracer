@@ -34,7 +34,8 @@ setup(
             'autonomy_manager = piracer.autonomy_manager:main',
             'v2x_node = piracer.v2x_node:main',
             'straight_behavior = piracer.straight_behavior:main',
-            'arc_behavior = piracer.arc_behavior:main'
+            'arc_behavior = piracer.arc_behavior:main',
+            'odom_pub = piracer.odom_pub:main'
         ],
     },
 )
