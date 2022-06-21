@@ -6,7 +6,6 @@ from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformBroadcaster
 from os import environ
 
-
 class PublishOdom(Node):
     def __init__(self):
         super().__init__('odom_pub')
@@ -44,7 +43,7 @@ class PublishOdom(Node):
 
         odomMsg = Odometry()
         odomMsg.header.stamp = self.get_clock().now().to_msg()
-        odomMsg.header.frame_id = self.car_id + '_base_link'
+        odomMsg.header.frame_id = f'car{self.car_id}_base_link'
 
         odomMsg.pose.pose.position.x = float(self.vive.pose.pose.position.x)
         odomMsg.pose.pose.position.y = float(self.vive.pose.pose.position.y)
@@ -69,7 +68,7 @@ class PublishOdom(Node):
 
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = 'odom'
-        t.child_frame_id = self.car_id + '_base_link'
+        t.child_frame_id = f'car{self.car_id}_base_link'
 
         t.transform.translation.x = float(self.vive.pose.pose.position.x)
         t.transform.translation.y = float(self.vive.pose.pose.position.y)
