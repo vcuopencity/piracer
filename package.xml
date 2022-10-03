@@ -6,16 +6,18 @@
   <description>ROS2 package for Waveshare PiRacer</description>
   <maintainer email="morrissettal2@vcu.edu">Adam Morrissett</maintainer>
   <maintainer email="marshallpt@vcu.edu">Patrick Marshall</maintainer>
-  <license>TODO: License declaration</license>
+  <license>MIT</license>
 
   <depend>autonomy_mgmt_msgs</depend>
   <depend>bno055_driver</depend>
+  <depend>builtin_protos</depend>
   <depend>carma_v2x_msgs</depend>
   <depend>cmd_msgs</depend>
   <depend>opencity_utils</depend>
   <depend>piracer_msgs</depend>
   <depend>rclcpy</depend>
   <depend>ros2_message_converter</depend>
+  <depend>traffic_signal_msgs</depend>
   <depend>transitions</depend>
 
   <test_depend>ament_copyright</test_depend>
