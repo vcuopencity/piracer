@@ -1,65 +1,65 @@
 # Namespace for this agent. If the agent_name launch arg is utilized, this must be updated,
 # or none of these parameters will be grabbed. default = car1
-
-autonomy_manager:
-      ros__parameters:
-      #      string : Input topic to receive cmd msgs, default = 'control_input_topic'
-            cmd_bridge_input_topic: 'cmd/in'
-      #      string : Output topic to echo back received cmd msgs, default = 'control_output_topic'
-            cmd_bridge_output_topic: 'cmd/out'
-steering_driver:
-      ros__parameters:
-      #      double : Lower bound in radians for servo to move, default = 0.0
-            min_angle: -1.309
-      #      double : Upper bound in radians for servo to move, default = 0.0
-            max_angle: 1.309
-throttle_driver:
-      ros__parameters:
-      #      double : minimum throttle percentage to drive the motor, default = -1.0
-            min_throttle: -1.0
-      #      double : maximum throttle percentage to drive the motor, default = 1.0
-            max_throttle: 1.0
-v2x_node:
-      ros__parameters:
-      #      string : the topic the agent's state is output to, default = 'car_state_output_topic'
-            car_state_output_topic: 'car_state'
-      #      string array : array of neighbor agents to subscribe to, default = []
-            neighbor_list: ['car1', 'car2', 'car3', 'signal1']
-      #      double : frequency to report agent's own state, default = 1.0
-            report_frequency: 1.0
-      #      string : URI for MQTT broker, default = 127.0.0.1
-            mqtt_broker_uri: '10.1.1.1'
-ackermann_controller:
-      ros__parameters:
-      #      string : input topic for twist messages, default = 'ros_pub_top'
-            twist_bridge_input_topic: 'twist/in'
-      #      string : input topic for twist messages, default = 'ros_sub_top'
-            twist_bridge_output_topic: 'twist/out'
-      #      double : vehicle length in meters to parse velocity, default = 1.0
-            vehicle_length: 0.24
-      #      double : upper bound for velocity values, default = 2.5
-            max_velocity: 2.64
-      #      double : lower bound for velocity values, default = 0.001
-            min_velocity: 0.01
-      #      double : lower bound for omega values, default = 0.001
-            min_omega: 0.01
-straight_behavior:
-      ros__parameters:
-      #      double : velocity in m/s to drive the motors, default = 1.0
-            velocity: 0.75
-      #      string : topic for twist msg publishing, default = 'twist_topic'
-            twist_topic: 'twist/in'
-arc_behavior:
-      ros__parameters:
-      #      double : velocity in m/s to drive the motors, default = 1.0
-            velocity: 0.75
-      #      double : angle in radians to turn the servos, default = 0.25
-            steering_angle: 0.45
-      #      string : topic for twist msg publishing, default = 'twist_topic'
-            twist_topic: 'twist/in'
-bno055_driver:
-      ros__parameters:
-      #      string: topic for IMU msg to be published, default = `imu`
-            imu_topic: "imu"
-      #      double: rate for imu msg to be published in HZ, default = 50.0
-            imu_rate: 50.0
+car1:
+      autonomy_manager:
+            ros__parameters:
+            #      string : Input topic to receive cmd msgs, default = 'control_input_topic'
+                  cmd_bridge_input_topic: 'cmd/in'
+            #      string : Output topic to echo back received cmd msgs, default = 'control_output_topic'
+                  cmd_bridge_output_topic: 'cmd/out'
+      steering_driver:
+            ros__parameters:
+            #      double : Lower bound in radians for servo to move, default = 0.0
+                  min_angle: -1.309
+            #      double : Upper bound in radians for servo to move, default = 0.0
+                  max_angle: 1.309
+      throttle_driver:
+            ros__parameters:
+            #      double : minimum throttle percentage to drive the motor, default = -1.0
+                  min_throttle: -1.0
+            #      double : maximum throttle percentage to drive the motor, default = 1.0
+                  max_throttle: 1.0
+      v2x_node:
+            ros__parameters:
+            #      string : the topic the agent's state is output to, default = 'car_state_output_topic'
+                  car_state_output_topic: 'car_state'
+            #      string array : array of neighbor agents to subscribe to, default = []
+                  neighbor_list: ['car1', 'car2', 'car3', 'signal1']
+            #      double : frequency to report agent's own state, default = 1.0
+                  report_frequency: 1.0
+            #      string : URI for MQTT broker, default = 127.0.0.1
+                  mqtt_broker_uri: '192.168.1.166'
+      ackermann_controller:
+            ros__parameters:
+            #      string : input topic for twist messages, default = 'ros_pub_top'
+                  twist_bridge_input_topic: 'twist/in'
+            #      string : input topic for twist messages, default = 'ros_sub_top'
+                  twist_bridge_output_topic: 'twist/out'
+            #      double : vehicle length in meters to parse velocity, default = 1.0
+                  vehicle_length: 0.24
+            #      double : upper bound for velocity values, default = 2.5
+                  max_velocity: 2.64
+            #      double : lower bound for velocity values, default = 0.001
+                  min_velocity: 0.01
+            #      double : lower bound for omega values, default = 0.001
+                  min_omega: 0.01
+      straight_behavior:
+            ros__parameters:
+            #      double : velocity in m/s to drive the motors, default = 1.0
+                  velocity: 0.75
+            #      string : topic for twist msg publishing, default = 'twist_topic'
+                  twist_topic: 'twist/in'
+      arc_behavior:
+            ros__parameters:
+            #      double : velocity in m/s to drive the motors, default = 1.0
+                  velocity: 0.75
+            #      double : angle in radians to turn the servos, default = 0.25
+                  steering_angle: 0.45
+            #      string : topic for twist msg publishing, default = 'twist_topic'
+                  twist_topic: 'twist/in'
+      bno055_driver:
+            ros__parameters:
+            #      string: topic for IMU msg to be published, default = `imu`
+                  imu_topic: "imu"
+            #      double: rate for imu msg to be published in HZ, default = 50.0
+                  imu_rate: 50.0
