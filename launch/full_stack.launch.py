@@ -33,7 +33,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'config_file',
-            default_value=[example_config],
+            default_value=example_config,
             description='Agent configuration .yaml file.'
         ),
         IncludeLaunchDescription(
