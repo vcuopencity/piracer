@@ -28,7 +28,7 @@ car1:
             #      double : frequency to report agent's own state, default = 1.0
                   report_frequency: 1.0
             #      string : URI for MQTT broker, default = 127.0.0.1
-                  mqtt_broker_uri: '192.168.1.166'
+                  mqtt_broker_uri: '10.0.1.1'
       ackermann_controller:
             ros__parameters:
             #      string : input topic for twist messages, default = 'ros_pub_top'
