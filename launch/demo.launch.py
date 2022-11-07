@@ -40,7 +40,8 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/imu_bridge.launch.py']),
             launch_arguments={
-                'agent_name': LaunchConfiguration('agent_name')
+                'agent_name': LaunchConfiguration('agent_name'),
+                'config_file' : LaunchConfiguration('config_file')
             }.items(),
             condition=IfCondition(launch_bridge)
         ),

@@ -28,6 +28,9 @@ def generate_launch_description():
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([launch_directory, '/hardware_nodes.launch.py']),
+            launch_arguments={
+                'config_file' : LaunchConfiguration('config_file')
+            }.items(),
             condition=IfCondition(launch_hardware)
         ),
         Node(

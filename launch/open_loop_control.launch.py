@@ -15,8 +15,8 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     """Launch hardware_nodes.launch and the teleop_control node for teleop control of the piracer.
     """
-    car_config = join(get_package_share_directory('piracer'),
-                      'config', 'car_config.yaml')
+    example_config = join(get_package_share_directory('piracer'),
+                      'config', 'example_config.yaml')
     launch_directory = get_package_share_directory('piracer')
     launch_ackermann = LaunchConfiguration('launch_ackermann')
 
@@ -31,6 +31,11 @@ def generate_launch_description():
             default_value='True',
             description='Determines if ackermann_control.launch is called.'
         ),
+        DeclareLaunchArgument(
+            'config_file',
+            default_value=[example_config],
+            description='Agent configuration .yaml file.'
+        ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([launch_directory, '/ackermann_control.launch.py']),
             launch_arguments={
@@ -43,13 +48,13 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='straight_behavior',
             name='straight_behavior',
-            parameters=[car_config]
+            parameters=[LaunchConfiguration('config_file')]
         ),
         Node(
             package='piracer',
             namespace=[LaunchConfiguration('agent_name')],
             executable='arc_behavior',
             name='arc_behavior',
-            parameters=[car_config]
+            parameters=[LaunchConfiguration('config_file')]
         )
     ])

@@ -41,27 +41,31 @@ def generate_launch_description():
             PythonLaunchDescriptionSource([piracer_launch_directory, '/ackermann_control.launch.py']),
             launch_arguments={
                 'agent_name': LaunchConfiguration('agent_name'),
-                'launch_hardware': 'false'
+                'launch_hardware': 'false',
+                'config_file' : LaunchConfiguration('config_file')
             }.items()
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/teleop_control.launch.py']),
             launch_arguments={
                 'agent_name': LaunchConfiguration('agent_name'),
-                'launch_hardware': 'false'
+                'launch_hardware': 'false',
+                'config_file' : LaunchConfiguration('config_file')
             }.items()
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/open_loop_control.launch.py']),
             launch_arguments={
                 'agent_name': LaunchConfiguration('agent_name'),
-                'launch_ackermann': 'false'
+                'launch_ackermann': 'false',
+                'config_file' : LaunchConfiguration('config_file')
             }.items()
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
-                'agent_name': LaunchConfiguration('agent_name')
+                'agent_name': LaunchConfiguration('agent_name'),
+                'config_file' : LaunchConfiguration('config_file')
             }.items(),
         ),
         IncludeLaunchDescription(

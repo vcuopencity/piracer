@@ -16,8 +16,8 @@ def generate_launch_description():
     """Launch hardware_nodes.launch and the ackermann_control node for ackermann drive control of the piracer. Intended
     for use with the ackermann_drive.launch configuration of the mqtt_bridge package.
     """
-    car_config = join(get_package_share_directory('piracer'),
-                      'config', 'car_config.yaml')
+    example_config = join(get_package_share_directory('piracer'),
+                      'config', 'example_config.yaml')
     piracer_launch_directory = get_package_share_directory('piracer')
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
 
@@ -39,12 +39,18 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'launch_bridge',
             default_value='true',
-            description='Determinds if ackermann_drive_bridge.launch is called from the mqtt_bridge package.'
+            description='Determines if ackermann_drive_bridge.launch is called from the mqtt_bridge package.'
+        ),
+        DeclareLaunchArgument(
+            'config_file',
+            default_value=[example_config],
+            description='Agent configuration .yaml file.'
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
             launch_arguments={
-                'agent_name': LaunchConfiguration('agent_name')
+                'agent_name': LaunchConfiguration('agent_name'),
+                'config_file' : LaunchConfiguration('config_file')
             }.items(),
             condition=IfCondition(launch_hardware)
         ),
@@ -53,7 +59,7 @@ def generate_launch_description():
             namespace=[LaunchConfiguration('agent_name')],
             executable='ackermann_controller',
             name='ackermann_controller',
-            parameters=[car_config],
+            parameters=[LaunchConfiguration('config_file')],
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/twist_bridge.launch.py']),
