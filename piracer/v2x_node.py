@@ -64,8 +64,7 @@ class V2xNode(Node):
             self.mqtt_client.connect(self._mqtt_broker_uri, 1883)
             self.mqtt_client.loop_start()
         except ConnectionRefusedError:
-            self.get_logger().fatal(f'MQTT Publisher failed to connect to: {self._mqtt_broker_uri}')
-            self.get_logger().fatal(f'V2X is non-functional, as the MQTT client failed to connect to the broker. Exiting...')
+            self.get_logger().fatal(f'MQTT Publisher failed to connect to: {self._mqtt_broker_uri} Node is terminating...')
             exit()
         
 
