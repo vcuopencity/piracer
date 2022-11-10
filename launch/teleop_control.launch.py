@@ -17,6 +17,8 @@ def generate_launch_description():
     """Launch hardware_nodes.launch and the teleop_control node for teleop control of the piracer.
     """
     launch_directory = get_package_share_directory('piracer')
+    default_config = join(get_package_share_directory('piracer'),
+                      'config', 'default_config.yaml')
     launch_hardware = LaunchConfiguration('launch_hardware')
     agent_name = "car" + environ['CAR_ID']
 
@@ -26,8 +28,16 @@ def generate_launch_description():
             default_value='True',
             description='Determines if hardware_nodes.launch is called.'
         ),
+        DeclareLaunchArgument(
+            'config_file',
+            default_value=default_config,
+            description='Agent configuration .yaml file.'
+        ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([launch_directory, '/hardware_nodes.launch.py']),
+            launch_arguments={
+                'config_file' : LaunchConfiguration('config_file')
+            }.items(),
             condition=IfCondition(launch_hardware)
         ),
         Node(
