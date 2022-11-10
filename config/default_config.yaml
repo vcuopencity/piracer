@@ -1,6 +1,6 @@
 # Namespace for this agent. If the agent_name launch arg is utilized, this must be updated,
 # or none of these parameters will be grabbed. default = example_car
-example_car:
+car:
       autonomy_manager:
             ros__parameters:
             #      string : Input topic to receive cmd msgs, default = 'control_input_topic'

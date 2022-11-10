@@ -1,5 +1,6 @@
 # Standard library imports
 from os.path import join
+from os import environ
 
 # Third-party imports
 from ament_index_python.packages import get_package_share_directory
@@ -15,17 +16,14 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     """Launch hardware_nodes.launch and the teleop_control node for teleop control of the piracer.
     """
-    example_config = join(get_package_share_directory('piracer'),
-                      'config', 'example_config.yaml')
+    default_config = join(get_package_share_directory('piracer'),
+                      'config', 'default_config.yaml')
     launch_directory = get_package_share_directory('piracer')
     launch_ackermann = LaunchConfiguration('launch_ackermann')
 
+    agent_name = "car" + environ['CAR_ID']
+
     return LaunchDescription([
-        DeclareLaunchArgument(
-            'agent_name',
-            default_value='car1',
-            description='Sets the namespace for this car.'
-        ),
         DeclareLaunchArgument(
             'launch_ackermann',
             default_value='True',
@@ -33,26 +31,26 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'config_file',
-            default_value=[example_config],
+            default_value=default_config,
             description='Agent configuration .yaml file.'
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([launch_directory, '/ackermann_control.launch.py']),
             launch_arguments={
-                'agent_name': LaunchConfiguration('agent_name')
+                'agent_name': agent_name
             }.items(),
             condition=IfCondition(launch_ackermann)
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('agent_name')],
+            namespace=agent_name,
             executable='straight_behavior',
             name='straight_behavior',
             parameters=[LaunchConfiguration('config_file')]
         ),
         Node(
             package='piracer',
-            namespace=[LaunchConfiguration('agent_name')],
+            namespace=agent_name,
             executable='arc_behavior',
             name='arc_behavior',
             parameters=[LaunchConfiguration('config_file')]

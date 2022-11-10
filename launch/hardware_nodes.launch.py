@@ -13,15 +13,15 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     """ Lowest-level launch for piracer, including only the nodes that interact directly with the hardware.
     """
-    example_config = join(get_package_share_directory('piracer'),
-                      'config', 'example_config.yaml')
+    default_config = join(get_package_share_directory('piracer'),
+                      'config', 'default_config.yaml')
                     
     agent_name = "car" + environ['CAR_ID']
 
     return LaunchDescription([
         DeclareLaunchArgument(
             'config_file',
-            default_value=[example_config],
+            default_value=default_config,
             description='Agent configuration .yaml file.'
         ),
         Node(
