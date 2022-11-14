@@ -1,5 +1,4 @@
 from cmd_msgs.msg import Command
-
 from autonomy_mgmt_msgs.srv import Enable
 
 import rclpy
@@ -7,7 +6,9 @@ from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import SetParameters
 from rclpy.node import Node
 
+import paho.mqtt.client
 from transitions import Machine
+from os import environ
 
 
 class AutonomyManager(Node):
@@ -24,6 +25,7 @@ class AutonomyManager(Node):
         self._init_pub()
         self._init_sub()
         self._init_srv()
+        self._init_mqtt()
 
         self._mode_machine = ModeSwitchingMachine(self)
         self._init_mode_machine()
@@ -80,6 +82,37 @@ class AutonomyManager(Node):
         self.arc_param_client = self.create_client(SetParameters, 'arc_behavior/set_parameters')
         while not self.arc_behavior_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("arc_behavior/set_parameters not available, waiting...")
+    
+    def _init_mqtt(self):
+        """Create an MQTT client, set callbacks, connect to the broker, and start the loop."""
+        self.mqtt_client = paho.mqtt.client.Client(f'/{self._agent_name}/autonomy_manager')
+
+        self.mqtt_client.on_connect = self._mqtt_on_connect
+        self.mqtt_client.on_message = self._mqtt_on_message
+
+        if environ.get('MQTT_BROKER_URI') is not None:
+            self._mqtt_broker_uri = environ.get('MQTT_BROKER_URI')
+        else:
+            self._mqtt_broker_uri = "127.0.0.1"
+        
+        try:
+            self.mqtt_client.connect(self._mqtt_broker_uri, 1883)
+            self.mqtt_client.loop_start()
+        except ConnectionRefusedError:
+            self.get_logger().fatal(f"""MQTT Publisher failed to connect to: """
+                                    f"""{self._mqtt_broker_uri} Node is terminating...""")
+            exit()
+
+        self.mqtt_client.subscribe(f'/{self._agent_name}/demo')
+    
+    def _mqtt_on_connect(self, client, userdata, flags, rc):
+        """Log MQTT broker connection code."""
+        self.get_logger().info(f"""MQTT Publisher connected to: {self._mqtt_broker_uri}"""
+                               f""" with result code: {rc}""")
+    
+    def _mqtt_on_message(self, client, userdata, msg):
+        """Change the state of the vehicle."""
+        pass
 
     def _init_mode_machine(self):
         states = ['auto', 'direct', 'experiment']
