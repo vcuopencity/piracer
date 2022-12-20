@@ -27,8 +27,8 @@ class AutonomyManager(Node):
         self._init_srv()
         self._init_mqtt()
 
-        self._mode_machine = ModeSwitchingMachine(self)
-        self._init_mode_machine()
+        self._mode_machine = AutonomyMachine(self)
+        self._init_autonomy_machine()
 
         self._driving_machine = DrivingMachine(self)
         self._init_driving_machine()
@@ -39,6 +39,14 @@ class AutonomyManager(Node):
 
         self.declare_parameter('cmd_bridge_output_topic', 'control_output_topic')
         self.cmd_bridge_output_topic = self.get_parameter('cmd_bridge_output_topic').get_parameter_value().string_value
+
+        self.declare_parameter('initial_mode')
+        self.initial_mode = self.get_parameter('initial_mode').get_parameter_value().string_value
+
+        states = ['auto', 'direct', 'experiment']
+
+        if self.initial_mode.lower() not in  states:
+            raise ValueError(f"initial_mode must be set to one of {states}")
 
     def _init_pub(self):
         self.command_pub = self.create_publisher(
@@ -102,8 +110,6 @@ class AutonomyManager(Node):
             self.get_logger().fatal(f"""MQTT Publisher failed to connect to: """
                                     f"""{self._mqtt_broker_uri} Node is terminating...""")
             exit()
-
-        self.mqtt_client.subscribe(f'/{self._agent_name}/demo')
     
     def _mqtt_on_connect(self, client, userdata, flags, rc):
         """Log MQTT broker connection code."""
@@ -112,16 +118,16 @@ class AutonomyManager(Node):
     
     def _mqtt_on_message(self, client, userdata, msg):
         """Change the state of the vehicle."""
-        pass
+        self.get_logger().info(f"MQTT message received! {msg}")
 
-    def _init_mode_machine(self):
+    def _init_autonomy_machine(self):
         states = ['auto', 'direct', 'experiment']
         transitions = [
             {'trigger': 'direct', 'source': '*', 'dest': 'direct'},
             {'trigger': 'auto', 'source': '*', 'dest': 'auto'},
             {'trigger': 'experiment', 'source': '*', 'dest': 'experiment'}
         ]
-        machine = Machine(model=self._mode_machine, states=states, transitions=transitions, initial='direct')
+        machine = Machine(model=self._mode_machine, states=states, transitions=transitions, initial=self.initial_mode)
 
     def _init_driving_machine(self):
         states = ['stop', 'straight', 'arc']
@@ -221,7 +227,8 @@ class AutonomyManager(Node):
         self.update_arc_steering_angle(steering_angle)
 
 
-class ModeSwitchingMachine:
+class AutonomyMachine:
+    """Callbacks for autonomy mode state transitions."""
     def __init__(self, autonomy_manager):
         self._autonomy_manager = autonomy_manager
         self._agent_name = self._autonomy_manager._agent_name
@@ -245,17 +252,20 @@ class ModeSwitchingMachine:
     # Experiment mode   -------------------------
     def on_enter_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
-        self._autonomy_manager.timer = self._autonomy_manager.create_timer(
-            2.7, self._autonomy_manager.figure_eight_experiment
-        )
+        self._autonomy_manager.mqtt_client.subscribe(f'/{self._agent_name}/demo')
+        # self._autonomy_manager.timer = self._autonomy_manager.create_timer(
+        #     2.7, self._autonomy_manager.figure_eight_experiment
+        # )
 
     def on_exit_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
-        self._autonomy_manager.timer.cancel()
+        self._autonomy_manager.mqtt_client.unsubscribe(f'/{self._agent_name}/demo')
+        # self._autonomy_manager.timer.cancel()
         self._autonomy_manager._driving_machine.stop()
 
 
 class DrivingMachine:
+    """Callbacks for driving mode state transitions."""
     def __init__(self, autonomy_manager):
         self._autonomy_manager = autonomy_manager
         self._agent_name = self._autonomy_manager._agent_name

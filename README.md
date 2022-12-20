@@ -115,3 +115,13 @@ launched as needed unless `launch_bridge` is set to `False`.
      `direct` mode, it hangs until the `twist` bridge is launched, outputting to the logger that it is
      waiting for the service to be available.
 1. `command`: allows for mode switching, as previously described in the [Control Modes](#control-modes) section.
+
+
+### Spring 2023 Demo
+
+1. Pushing code to the car, using VSCode to develop, run this command from the 
+`piracer-internal` folder on the development machine: `rsync -rlptzv --progress --exclude=.git . "ubuntu@piracer-01:~/dev_ws/src/
+ piracer-internal"`
+
+1. Running the code on the car: `ros2 launch piracer full_stack.launch.py config_file:="/home/ubuntu/dev_ws/src/
+ piracer_configs-internal/car1_config.yaml"`
