@@ -118,7 +118,12 @@ class AutonomyManager(Node):
     
     def _mqtt_on_message(self, client, userdata, msg):
         """Change the state of the vehicle."""
-        self.get_logger().info(f"MQTT message received! {msg}")
+        payload = str(msg.payload.decode('utf-8'))
+        self.get_logger().info(f"MQTT message received! {payload}")
+        if payload.lower() == 'pause':
+            self._driving_machine.stop()
+        elif payload.lower() == 'resume':
+            self._driving_machine.straight()
 
     def _init_autonomy_machine(self):
         states = ['initial', 'auto', 'direct', 'experiment']
@@ -128,7 +133,7 @@ class AutonomyManager(Node):
             {'trigger': 'experiment', 'source': '*', 'dest': 'experiment'}
         ]
         machine = Machine(model=self._autonomy_machine, states=states, transitions=transitions, initial='initial')
-        # Dummy initial mode is rqd. so that "on_enter" callback is called for initial state
+        # Dummy initial mode is rqd so that "on_enter" callback is called for initial state
         self._autonomy_machine.trigger(self.initial_mode)
 
     def _init_driving_machine(self):
