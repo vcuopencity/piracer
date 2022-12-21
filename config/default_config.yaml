@@ -7,6 +7,8 @@ car:
                   cmd_bridge_input_topic: 'cmd/in'
             #      string : Output topic to echo back received cmd msgs, default = 'control_output_topic'
                   cmd_bridge_output_topic: 'cmd/out'
+            #     string : initial mode for the autonomy state machine      
+                  initial_mode: 'experiment'
       steering_driver:
             ros__parameters:
             #      double : Lower bound in radians for servo to move, default = 0.0

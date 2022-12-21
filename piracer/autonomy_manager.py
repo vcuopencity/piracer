@@ -27,11 +27,11 @@ class AutonomyManager(Node):
         self._init_srv()
         self._init_mqtt()
 
-        self._mode_machine = AutonomyMachine(self)
-        self._init_autonomy_machine()
-
         self._driving_machine = DrivingMachine(self)
         self._init_driving_machine()
+
+        self._autonomy_machine = AutonomyMachine(self)
+        self._init_autonomy_machine()
 
     def _init_params(self):
         self.declare_parameter('cmd_bridge_input_topic', 'control_input_topic')
@@ -121,13 +121,15 @@ class AutonomyManager(Node):
         self.get_logger().info(f"MQTT message received! {msg}")
 
     def _init_autonomy_machine(self):
-        states = ['auto', 'direct', 'experiment']
+        states = ['initial', 'auto', 'direct', 'experiment']
         transitions = [
             {'trigger': 'direct', 'source': '*', 'dest': 'direct'},
             {'trigger': 'auto', 'source': '*', 'dest': 'auto'},
             {'trigger': 'experiment', 'source': '*', 'dest': 'experiment'}
         ]
-        machine = Machine(model=self._mode_machine, states=states, transitions=transitions, initial=self.initial_mode)
+        machine = Machine(model=self._autonomy_machine, states=states, transitions=transitions, initial='initial')
+        # Dummy initial mode is rqd. so that "on_enter" callback is called for initial state
+        self._autonomy_machine.trigger(self.initial_mode)
 
     def _init_driving_machine(self):
         states = ['stop', 'straight', 'arc']
@@ -152,14 +154,14 @@ class AutonomyManager(Node):
         """Responding to a received command."""
         self.command_pub.publish(msg)
 
-        if msg.operational_mode.lower() == self._mode_machine.state:
-            self.get_logger().info(f"{self._agent_name} is already in {str(self._mode_machine.state.upper())} mode!")
+        if msg.operational_mode.lower() == self._autonomy_machine.state:
+            self.get_logger().info(f"{self._agent_name} is already in {str(self._autonomy_machine.state.upper())} mode!")
         elif msg.operational_mode.lower() == 'direct':
-            self._mode_machine.direct()
+            self._autonomy_machine.direct()
         elif msg.operational_mode.lower() == 'auto':
-            self._mode_machine.auto()
+            self._autonomy_machine.auto()
         elif msg.operational_mode.lower() == 'experiment':
-            self._mode_machine.experiment()
+            self._autonomy_machine.experiment()
 
     def figure_eight_experiment(self):
         """Switch driving angle between both extremes on alternating calls.
