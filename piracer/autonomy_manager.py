@@ -121,7 +121,7 @@ class AutonomyManager(Node):
         payload = str(msg.payload.decode('utf-8'))
         self.get_logger().info(f"MQTT message received! {payload}")
         if payload.lower() == 'pause':
-            self._driving_machine.stop()
+            self._driving_machine.trigger('pause')
         elif payload.lower() == 'resume':
             self._driving_machine.straight()
 
@@ -137,11 +137,15 @@ class AutonomyManager(Node):
         self._autonomy_machine.trigger(self.initial_mode)
 
     def _init_driving_machine(self):
-        states = ['stop', 'straight', 'arc']
+        states = ['stop', 'straight', 'arc', 'pause_straight', 'pause_arc']
         transitions = [
             {'trigger': 'stop', 'source': '*', 'dest': 'stop'},
             {'trigger': 'straight', 'source': '*', 'dest': 'straight'},
-            {'trigger': 'arc', 'source': '*', 'dest': 'arc'}
+            {'trigger': 'arc', 'source': '*', 'dest': 'arc'},
+            {'trigger': 'pause', 'source': 'straight', 'dest': 'pause_straight'},
+            {'trigger': 'pause', 'source': 'arc', 'dest': 'pause_arc'},
+            {'trigger': 'resume', 'source': 'pause_straight', 'dest': 'straight'},
+            {'trigger': 'resume', 'source': 'pause_arc', 'dest': 'arc'}
         ]
         machine = Machine(model=self._driving_machine, states=states, transitions=transitions, initial='stop')
 
