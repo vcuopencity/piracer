@@ -157,10 +157,14 @@ class AutonomyManager(Node):
     def enable_twist(self):
         self.ack_request.enable = True
         self.future = self.enable_twist_client.call_async(self.ack_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def disable_twist(self):
         self.ack_request.enable = False
         self.future = self.enable_twist_client.call_async(self.ack_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     # Subscriber callbacks ------------------------------------------------------------------------
     def command_callback(self, msg):
@@ -209,6 +213,8 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.straight_param_client.call_async(self.behavior_param_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def update_arc_velocity(self, velocity):
         """Update the velocity parameter of the arc_behavior node by calling its parameter-
@@ -221,6 +227,8 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def update_arc_steering_angle(self, velocity):
         """Update the steering_angle parameter of the arc_behavior node by calling its parameter-
@@ -233,6 +241,8 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def update_arc_params(self, velocity, steering_angle):
         """Update the velocity AND steering_angle parameters of the arc_behavior node by calling
