@@ -56,8 +56,10 @@ anything, but for practical purposes it should never need to be launched by itse
 ```
 ### Environment Variables
 These need to be set *before* launching the code for the first time.
-1. `CAR_ID`: ID of the car, will be concatenated with string `car`. Example values: `1`, `2`, `3` for `car1`, `car2`, or `car3` respectfully.
-1. `MQTT_BROKER_URI`: URI of MQTT broker to be used by `autonomy_manager` and `v2x_node`. Defaults to `127.0.0.1` if not set.
+1. `CAR_ID`: ID of the car, will be concatenated with string `car` to set the ROS namespace. 
+Example values: `1`, `2`, `3` for `car1`, `car2`, or `car3` respectfully.
+1. `MQTT_BROKER_URI`: URI of MQTT broker to be used by `autonomy_manager` and `v2x_node`. 
+Defaults to `127.0.0.1` if not set.
 
 Example of setting `MQTT_BROKER_URI`: `export MQTT_BROKER_URI=127.0.0.1` 
 For long-term deployment, setting these in `.bashrc` is recommended.
