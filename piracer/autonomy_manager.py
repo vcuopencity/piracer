@@ -120,12 +120,14 @@ class AutonomyManager(Node):
     def _mqtt_on_message(self, client, userdata, msg):
         """Change the state of the vehicle."""
         payload = str(msg.payload.decode('utf-8'))
-        self.get_logger().info(f"MQTT message received! {payload}")
+        self.get_logger().debug(f"MQTT message received! {payload}")
         
         try:
             self._driving_machine.trigger(payload)
         except MachineError:
             self.get_logger().error(f"Driving machine cannot transition from {self._driving_machine.state} to {payload}!")
+        except AttributeError:
+            self.get_logger().error(f"{payload} is not a valid transition!")
 
     def _init_autonomy_machine(self):
         states = ['initial', 'auto', 'direct', 'experiment']
