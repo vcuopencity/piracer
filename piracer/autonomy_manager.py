@@ -8,6 +8,7 @@ from rclpy.node import Node
 
 import paho.mqtt.client
 from transitions import Machine
+from transitions import MachineError
 from os import environ
 
 
@@ -120,10 +121,11 @@ class AutonomyManager(Node):
         """Change the state of the vehicle."""
         payload = str(msg.payload.decode('utf-8'))
         self.get_logger().info(f"MQTT message received! {payload}")
-        if payload.lower() == 'pause':
-            self._driving_machine.trigger('pause')
-        elif payload.lower() == 'resume':
-            self._driving_machine.straight()
+        
+        try:
+            self._driving_machine.trigger(payload)
+        except MachineError:
+            self.get_logger().error(f"Driving machine cannot transition from {self._driving_machine.state} to {payload}!")
 
     def _init_autonomy_machine(self):
         states = ['initial', 'auto', 'direct', 'experiment']
