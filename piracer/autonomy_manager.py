@@ -1,5 +1,4 @@
 from cmd_msgs.msg import Command
-
 from autonomy_mgmt_msgs.srv import Enable
 
 import rclpy
@@ -7,7 +6,10 @@ from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import SetParameters
 from rclpy.node import Node
 
+import paho.mqtt.client
 from transitions import Machine
+from transitions import MachineError
+from os import environ
 
 
 class AutonomyManager(Node):
@@ -24,12 +26,13 @@ class AutonomyManager(Node):
         self._init_pub()
         self._init_sub()
         self._init_srv()
-
-        self._mode_machine = ModeSwitchingMachine(self)
-        self._init_mode_machine()
+        self._init_mqtt()
 
         self._driving_machine = DrivingMachine(self)
         self._init_driving_machine()
+
+        self._autonomy_machine = AutonomyMachine(self)
+        self._init_autonomy_machine()
 
     def _init_params(self):
         self.declare_parameter('cmd_bridge_input_topic', 'control_input_topic')
@@ -37,6 +40,14 @@ class AutonomyManager(Node):
 
         self.declare_parameter('cmd_bridge_output_topic', 'control_output_topic')
         self.cmd_bridge_output_topic = self.get_parameter('cmd_bridge_output_topic').get_parameter_value().string_value
+
+        self.declare_parameter('initial_mode')
+        self.initial_mode = self.get_parameter('initial_mode').get_parameter_value().string_value
+
+        states = ['auto', 'direct', 'experiment']
+
+        if self.initial_mode.lower() not in  states:
+            raise ValueError(f"initial_mode must be set to one of {states}")
 
     def _init_pub(self):
         self.command_pub = self.create_publisher(
@@ -80,22 +91,65 @@ class AutonomyManager(Node):
         self.arc_param_client = self.create_client(SetParameters, 'arc_behavior/set_parameters')
         while not self.arc_behavior_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("arc_behavior/set_parameters not available, waiting...")
+    
+    def _init_mqtt(self):
+        """Create an MQTT client, set callbacks, connect to the broker, and start the loop."""
+        self.mqtt_client = paho.mqtt.client.Client(f'/{self._agent_name}/autonomy_manager')
 
-    def _init_mode_machine(self):
-        states = ['auto', 'direct', 'experiment']
+        self.mqtt_client.on_connect = self._mqtt_on_connect
+        self.mqtt_client.on_message = self._mqtt_on_message
+
+        if environ.get('MQTT_BROKER_URI') is not None:
+            self._mqtt_broker_uri = environ.get('MQTT_BROKER_URI')
+        else:
+            self._mqtt_broker_uri = "127.0.0.1"
+        
+        try:
+            self.mqtt_client.connect(self._mqtt_broker_uri, 1883)
+            self.mqtt_client.loop_start()
+        except (ConnectionRefusedError, ValueError):
+            self.get_logger().fatal(f"""MQTT Publisher failed to connect to: """
+                                    f"""{self._mqtt_broker_uri} Node is terminating...""")
+            exit()
+    
+    def _mqtt_on_connect(self, client, userdata, flags, rc):
+        """Log MQTT broker connection code."""
+        self.get_logger().info(f"""MQTT Publisher connected to: {self._mqtt_broker_uri}"""
+                               f""" with result code: {rc}""")
+    
+    def _mqtt_on_message(self, client, userdata, msg):
+        """Change the state of the vehicle."""
+        payload = str(msg.payload.decode('utf-8'))
+        self.get_logger().debug(f"MQTT message received! {payload}")
+        
+        try:
+            self._driving_machine.trigger(payload)
+        except MachineError:
+            self.get_logger().error(f"Driving machine cannot transition from {self._driving_machine.state} to {payload}!")
+        except AttributeError:
+            self.get_logger().error(f"{payload} is not a valid transition!")
+
+    def _init_autonomy_machine(self):
+        states = ['initial', 'auto', 'direct', 'experiment']
         transitions = [
             {'trigger': 'direct', 'source': '*', 'dest': 'direct'},
             {'trigger': 'auto', 'source': '*', 'dest': 'auto'},
             {'trigger': 'experiment', 'source': '*', 'dest': 'experiment'}
         ]
-        machine = Machine(model=self._mode_machine, states=states, transitions=transitions, initial='direct')
+        machine = Machine(model=self._autonomy_machine, states=states, transitions=transitions, initial='initial')
+        # Dummy initial mode is rqd so that "on_enter" callback is called for initial state
+        self._autonomy_machine.trigger(self.initial_mode)
 
     def _init_driving_machine(self):
-        states = ['stop', 'straight', 'arc']
+        states = ['stop', 'straight', 'arc', 'pause_straight', 'pause_arc']
         transitions = [
             {'trigger': 'stop', 'source': '*', 'dest': 'stop'},
             {'trigger': 'straight', 'source': '*', 'dest': 'straight'},
-            {'trigger': 'arc', 'source': '*', 'dest': 'arc'}
+            {'trigger': 'arc', 'source': '*', 'dest': 'arc'},
+            {'trigger': 'pause', 'source': 'straight', 'dest': 'pause_straight'},
+            {'trigger': 'pause', 'source': 'arc', 'dest': 'pause_arc'},
+            {'trigger': 'resume', 'source': 'pause_straight', 'dest': 'straight'},
+            {'trigger': 'resume', 'source': 'pause_arc', 'dest': 'arc'}
         ]
         machine = Machine(model=self._driving_machine, states=states, transitions=transitions, initial='stop')
 
@@ -103,24 +157,28 @@ class AutonomyManager(Node):
     def enable_twist(self):
         self.ack_request.enable = True
         self.future = self.enable_twist_client.call_async(self.ack_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def disable_twist(self):
         self.ack_request.enable = False
         self.future = self.enable_twist_client.call_async(self.ack_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     # Subscriber callbacks ------------------------------------------------------------------------
     def command_callback(self, msg):
         """Responding to a received command."""
         self.command_pub.publish(msg)
 
-        if msg.operational_mode.lower() == self._mode_machine.state:
-            self.get_logger().info(f"{self._agent_name} is already in {str(self._mode_machine.state.upper())} mode!")
+        if msg.operational_mode.lower() == self._autonomy_machine.state:
+            self.get_logger().info(f"{self._agent_name} is already in {str(self._autonomy_machine.state.upper())} mode!")
         elif msg.operational_mode.lower() == 'direct':
-            self._mode_machine.direct()
+            self._autonomy_machine.direct()
         elif msg.operational_mode.lower() == 'auto':
-            self._mode_machine.auto()
+            self._autonomy_machine.auto()
         elif msg.operational_mode.lower() == 'experiment':
-            self._mode_machine.experiment()
+            self._autonomy_machine.experiment()
 
     def figure_eight_experiment(self):
         """Switch driving angle between both extremes on alternating calls.
@@ -155,6 +213,8 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.straight_param_client.call_async(self.behavior_param_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def update_arc_velocity(self, velocity):
         """Update the velocity parameter of the arc_behavior node by calling its parameter-
@@ -167,6 +227,8 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def update_arc_steering_angle(self, velocity):
         """Update the steering_angle parameter of the arc_behavior node by calling its parameter-
@@ -179,6 +241,8 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
     def update_arc_params(self, velocity, steering_angle):
         """Update the velocity AND steering_angle parameters of the arc_behavior node by calling
@@ -188,7 +252,8 @@ class AutonomyManager(Node):
         self.update_arc_steering_angle(steering_angle)
 
 
-class ModeSwitchingMachine:
+class AutonomyMachine:
+    """Callbacks for autonomy mode state transitions."""
     def __init__(self, autonomy_manager):
         self._autonomy_manager = autonomy_manager
         self._agent_name = self._autonomy_manager._agent_name
@@ -212,17 +277,20 @@ class ModeSwitchingMachine:
     # Experiment mode   -------------------------
     def on_enter_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
-        self._autonomy_manager.timer = self._autonomy_manager.create_timer(
-            2.7, self._autonomy_manager.figure_eight_experiment
-        )
+        self._autonomy_manager.mqtt_client.subscribe(f'/{self._agent_name}/demo')
+        # self._autonomy_manager.timer = self._autonomy_manager.create_timer(
+        #     2.7, self._autonomy_manager.figure_eight_experiment
+        # )
 
     def on_exit_experiment(self):
         self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
-        self._autonomy_manager.timer.cancel()
+        self._autonomy_manager.mqtt_client.unsubscribe(f'/{self._agent_name}/demo')
+        # self._autonomy_manager.timer.cancel()
         self._autonomy_manager._driving_machine.stop()
 
 
 class DrivingMachine:
+    """Callbacks for driving mode state transitions."""
     def __init__(self, autonomy_manager):
         self._autonomy_manager = autonomy_manager
         self._agent_name = self._autonomy_manager._agent_name

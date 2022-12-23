@@ -1,5 +1,6 @@
 # Standard library imports
 import json
+from os import environ
 
 # 3rd-party imports
 from carma_v2x_msgs.msg import BSM
@@ -40,9 +41,6 @@ class V2xNode(Node):
         self.declare_parameter('neighbor_list', [])
         self._neighbor_list = self.get_parameter('neighbor_list').get_parameter_value().string_array_value
 
-        self.declare_parameter('mqtt_broker_uri', '127.0.0.1')
-        self._mqtt_broker_uri = self.get_parameter('mqtt_broker_uri').get_parameter_value().string_value
-
     def _init_sub(self):
         """Subscribe to all neighbor state topics."""
         for neighbor in self._neighbor_list:
@@ -59,11 +57,16 @@ class V2xNode(Node):
 
         self.mqtt_client.on_connect = self._mqtt_on_connect
         self.mqtt_client.on_message = self._mqtt_on_message
+
+        if environ.get('MQTT_BROKER_URI') is not None:
+            self._mqtt_broker_uri = environ.get('MQTT_BROKER_URI')
+        else:
+            self._mqtt_broker_uri = "127.0.0.1"
         
         try:
             self.mqtt_client.connect(self._mqtt_broker_uri, 1883)
             self.mqtt_client.loop_start()
-        except ConnectionRefusedError:
+        except (ConnectionRefusedError, ValueError):
             self.get_logger().fatal(f'MQTT Publisher failed to connect to: {self._mqtt_broker_uri} Node is terminating...')
             exit()
         

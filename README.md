@@ -2,8 +2,6 @@
 ROS2 package for [Waveshare PiRacer](https://www.waveshare.com/piracer-ai-kit.htm).
 
 ## I2C Devices
-
----
 * `0x40` PCA9685 (steering servo control)
   * steering servo connected to channel `0`
   * compatible with Adafruit PCA9685 Python library
@@ -56,6 +54,16 @@ anything, but for practical purposes it should never need to be launched by itse
         class ackermann_control,hardware_nodes,open_loop_control,teleop_control,full_stack launch_file;
         class twist_bridge,control_bridge bridge_launch_file;
 ```
+### Environment Variables
+These need to be set *before* launching the code for the first time.
+1. `CAR_ID`: ID of the car, will be concatenated with string `car` to set the ROS namespace. 
+Example values: `1`, `2`, `3` for `car1`, `car2`, or `car3` respectfully.
+1. `MQTT_BROKER_URI`: URI of MQTT broker to be used by `autonomy_manager` and `v2x_node`. 
+Defaults to `127.0.0.1` if not set.
+
+Example of setting `MQTT_BROKER_URI`: `export MQTT_BROKER_URI=127.0.0.1` 
+For long-term deployment, setting these in `.bashrc` is recommended.
+
 ### Launch file options
 1. `full_stack.launch.py`: Launches all possible control modes at once, as well as the autonomy_manager.
 2. `open_loop_control.py`: Launches the open loop controllers and the ackermann_controller node.
@@ -63,23 +71,25 @@ anything, but for practical purposes it should never need to be launched by itse
 4. `teleop_control.launch.py`: For use with a gamepad / controller.
 
 ### Command-line arguments
-1. `agent_name`: Sets the namespace for all the nodes and topics. Necessary to set when launching multiple cars on the
-same ROS domain at once, otherwise there will be collisions and the cars will not function. 
-    * Default value: `car1`
-    * When using this argument, it is necessary to change the first line of `config/car_config.yaml` to match, otherwise 
-      the parameter values **will not be loaded**.
+1. `config_file`: Full path to configuration file.
+    * Default value: `piracer/config/default_config.yaml`
+    * These config files can be found at the dedicated 
+    [piracer_configs](https://github.com/vcuopencity/piracer_configs-internal) repo.
+
 1. `launch_bridge`: Controls the launching of bridges from the `mqtt_bridge` package.
     * Default value: `True`
     * This should be left as true unless the bridges are being launched manually elsewhere.
   
 ### Launch examples
 The following examples will only work after the package has already been successfully built using `colcon build 
---packages-select piracer` and the install directory sourced, via `source install/setup.bash`.
-1. `ros2 launch piracer full_stack.launch.py agent_name:=car1`
-    * Launches every control mode and the autonomy manager, in the namespace `/car1/`.
-1. `ros2 launch piracer teleop_control.launch.py agent_name:=car2`
-    * Launches the controller-driven mode, in the namespace `/car2/`.
-    * It is necessary to change line 1 of `config/car_config.yaml` for the parameter values to be loaded.
+--packages-select piracer` and the install directory sourced, via `source install/setup.bash`. Also assuming the 
+[environment variables](#environment-variables) have been set.
+1. `ros2 launch piracer full_stack.launch.py config_file:="/home/ubuntu/dev_ws/src/piracer_configs-internal/car1_config.yaml"`
+    * Launches every control mode and the autonomy manager, using `car1_config.yaml`.
+    * Assuming `CAR_ID=1`.
+1. `ros2 launch piracer teleop_control.launch.py config_file:="/home/ubuntu/dev_ws/src/piracer_configs-internal/car2_config.yaml"`
+    * Launches the controller-driven mode, using `car2_config.yaml`.
+    * Assuming `CAR_ID=2`.
     
 ```yaml
 car2:
@@ -93,16 +103,15 @@ car2:
 ### Control Modes
 The following are the currently implemented control modes. Switching between these is handled within the `autonomy_manager`
 node, using ROS2 services. The commands from the `command` bridge to enable these modes are strings and are 
-case-insensitive.
+case-insensitive. The **default** can be set through the `initial_mode` parameter for the `autonomy_manager` node,
+as seen in the `/config/default_config.yaml` file.
 
 1. `direct`: `twist` messages containing steering_angle and throttle commands are sent from the 
    `twist` bridge and parsed by the `ackermann_controller` node.
-   * **Default**: this is the state every car is in on launch
    * Enabled via sending the string `direct` through the command bridge
 2. `auto`: Does nothing as currently implemented.
    * Enabled via sending the string `auto` through the command bridge
-3. `experiment`: Starts a ROS timer, which then controls the vehicle using a state machine and the open-loop
-controllers `straight_behavior` and `arc_behavior`.
+3. `experiment`: Performs whatever experiment is currently being worked through.
    * Enabled via sending the string `experiment` through the command bridge
    
 ### Bridges
@@ -115,3 +124,14 @@ launched as needed unless `launch_bridge` is set to `False`.
      `direct` mode, it hangs until the `twist` bridge is launched, outputting to the logger that it is
      waiting for the service to be available.
 1. `command`: allows for mode switching, as previously described in the [Control Modes](#control-modes) section.
+
+
+### Spring 2023 Demo
+
+1. Pushing code to the car, using VSCode to develop, run this command from the 
+`piracer-internal` folder on the development machine: `rsync -rlptzv --progress --exclude=.git . "ubuntu@piracer-01:~/dev_ws/src/
+piracer-internal"`
+
+1. Ensure the [environment variables](#environment-variables) have been set on the car. 
+
+1. Running the code on the car: `ros2 launch piracer full_stack.launch.py config_file:="/home/ubuntu/dev_ws/src/piracer_configs-internal/car1_config.yaml"`
