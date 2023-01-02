@@ -1,10 +1,12 @@
 from cmd_msgs.msg import Command
 from autonomy_mgmt_msgs.srv import Enable
 
+import json
 import rclpy
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import SetParameters
 from rclpy.node import Node
+from rosidl_runtime_py import set_message
 
 import paho.mqtt.client
 from transitions import Machine
@@ -48,6 +50,11 @@ class AutonomyManager(Node):
 
         if self.initial_mode.lower() not in  states:
             raise ValueError(f"initial_mode must be set to one of {states}")
+        
+        self.declare_parameter('demo_topic')
+        self.demo_topic = self.get_parameter('demo_topic').get_parameter_value().string_value
+        if self.demo_topic == '':
+            raise ValueError("'demo_topic' parameter not set in config file.")
 
     def _init_pub(self):
         self.command_pub = self.create_publisher(
@@ -119,7 +126,12 @@ class AutonomyManager(Node):
     
     def _mqtt_on_message(self, client, userdata, msg):
         """Change the state of the vehicle."""
-        payload = str(msg.payload.decode('utf-8'))
+        cmd_dict = json.loads(msg.payload.decode('utf-8'))
+        cmd_msg = Command()
+        set_message.set_message_fields(cmd_msg, cmd_dict)
+        payload = cmd_msg.operational_mode
+
+        # payload = str(msg.payload.decode('utf-8'))
         self.get_logger().debug(f"MQTT message received! {payload}")
         
         try:
@@ -260,31 +272,33 @@ class AutonomyMachine:
 
     # Direct mode   -----------------------------
     def on_enter_direct(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering DIRECT mode.")
+        self._autonomy_manager.get_logger().info(f"AutonomyMachine is now entering DIRECT mode.")
         self._autonomy_manager.enable_twist()
 
     def on_exit_direct(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting DIRECT mode.")
+        self._autonomy_manager.get_logger().info(f"AutonomyMachine is now exiting DIRECT mode.")
         self._autonomy_manager.disable_twist()
 
     # Auto mode     -----------------------------
     def on_enter_auto(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering AUTO mode.")
+        self._autonomy_manager.get_logger().info(f"AutonomyMachine is now entering AUTO mode.")
 
     def on_exit_auto(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting AUTO mode.")
+        self._autonomy_manager.get_logger().info(f"AutonomyMachine is now exiting AUTO mode.")
 
     # Experiment mode   -------------------------
     def on_enter_experiment(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering EXPERIMENT mode.")
-        self._autonomy_manager.mqtt_client.subscribe(f'/{self._agent_name}/demo')
+        self._autonomy_manager.get_logger().info(f"AutonomyMachine is now entering EXPERIMENT mode.")
+        self._autonomy_manager.mqtt_client.subscribe(self._autonomy_manager.demo_topic)
+        self._autonomy_manager.update_straight_params(0.5)
+        self._autonomy_manager._driving_machine.straight()
         # self._autonomy_manager.timer = self._autonomy_manager.create_timer(
         #     2.7, self._autonomy_manager.figure_eight_experiment
         # )
 
     def on_exit_experiment(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting EXPERIMENT mode.")
-        self._autonomy_manager.mqtt_client.unsubscribe(f'/{self._agent_name}/demo')
+        self._autonomy_manager.get_logger().info(f"AutonomyMachine is now exiting EXPERIMENT mode.")
+        self._autonomy_manager.mqtt_client.unsubscribe(self._autonomy_manager.demo_topic)
         # self._autonomy_manager.timer.cancel()
         self._autonomy_manager._driving_machine.stop()
 
@@ -297,33 +311,33 @@ class DrivingMachine:
 
     # STOP  -------------------------------------
     def on_enter_stop(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering STOP mode.")
+        self._autonomy_manager.get_logger().info(f"DrivingMachine is now entering STOP mode.")
 
     def on_exit_stop(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting STOP mode.")
+        self._autonomy_manager.get_logger().info(f"DrivingMachine is now exiting STOP mode.")
 
     # STRAIGHT  ---------------------------------
     def on_enter_straight(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering STRAIGHT mode.")
+        self._autonomy_manager.get_logger().info(f"DrivingMachine is now entering STRAIGHT mode.")
         self._autonomy_manager.behavior_request.enable = True
         self._autonomy_manager.future = self._autonomy_manager.straight_behavior_client.call_async(
             self._autonomy_manager.behavior_request)
 
     def on_exit_straight(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting STRAIGHT mode.")
+        self._autonomy_manager.get_logger().info(f"DrivingMachine is now exiting STRAIGHT mode.")
         self._autonomy_manager.behavior_request.enable = False
         self._autonomy_manager.future = self._autonomy_manager.straight_behavior_client.call_async(
             self._autonomy_manager.behavior_request)
 
     # ARC   -------------------------------------
     def on_enter_arc(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now entering ARC mode.")
+        self._autonomy_manager.get_logger().info(f"DrivingMachine is now entering ARC mode.")
         self._autonomy_manager.behavior_request.enable = True
         self._autonomy_manager.future = self._autonomy_manager.arc_behavior_client.call_async(
             self._autonomy_manager.behavior_request)
 
     def on_exit_arc(self):
-        self._autonomy_manager.get_logger().info(f"{self._agent_name} is now exiting ARC mode.")
+        self._autonomy_manager.get_logger().info(f"DrivingMachine is now exiting ARC mode.")
         self._autonomy_manager.behavior_request.enable = False
         self._autonomy_manager.future = self._autonomy_manager.arc_behavior_client.call_async(
             self._autonomy_manager.behavior_request)
