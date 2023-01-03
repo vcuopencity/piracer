@@ -25,6 +25,7 @@ class AutonomyManager(Node):
         self._agent_name = self.get_namespace().lstrip('/')
         self.timer_counter = 0
         self._direction = True
+        self.debug_machine = False
 
         self._init_params()
         self._init_pub()
@@ -42,9 +43,10 @@ class AutonomyManager(Node):
         
         self.print_machine("Init")
 
-        logging.basicConfig(level=logging.DEBUG)
-        # Set transitions' log level to INFO; DEBUG messages will be omitted
-        logging.getLogger('transitions').setLevel(logging.INFO)
+        if self.debug_machine:
+            logging.basicConfig(level=logging.DEBUG)
+            # Set transitions' log level to INFO; DEBUG messages will be omitted
+            logging.getLogger('transitions').setLevel(logging.INFO)
 
     def _init_params(self):
         self.declare_parameter('cmd_bridge_input_topic', 'control_input_topic')
@@ -176,38 +178,35 @@ class AutonomyManager(Node):
     
     def print_machine(self, info):
         """Print the current state of these machines."""
-        self._driving_machine.get_graph().draw(f'driving_machine_{self.print_count}_{info}.png', prog='dot')
-        self._autonomy_machine.get_graph().draw(f'autonomy_machine_{self.print_count}_{info}.png', prog='dot')
-        self.print_count += 1
+        if self.debug_machines:
+            self._driving_machine.get_graph().draw(f'driving_machine_{self.print_count}_{info}.png', prog='dot')
+            self._autonomy_machine.get_graph().draw(f'autonomy_machine_{self.print_count}_{info}.png', prog='dot')
+            self.print_count += 1
 
     # Service callbacks ---------------------------------------------------------------------------
     def enable_twist(self):
         ack_request = Enable.Request()
         ack_request.enable = True
-        self.future = self.enable_twist_client.call_async(ack_request)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
+        future = self.enable_twist_client.call_async(ack_request)
 
     def disable_twist(self):
         ack_request = Enable.Request()
         ack_request.enable = False
-        self.future = self.enable_twist_client.call_async(ack_request)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
+        future = self.enable_twist_client.call_async(ack_request)
 
     # Subscriber callbacks ------------------------------------------------------------------------
     def command_callback(self, msg):
         """Responding to a received command."""
-        self.command_pub.publish(msg)
-
-        if msg.operational_mode.lower() == self._autonomy_machine.state:
-            self.get_logger().info(f"{self._agent_name} is already in {str(self._autonomy_machine.state.upper())} mode!")
-        elif msg.operational_mode.lower() == 'direct':
-            self._autonomy_machine.direct()
-        elif msg.operational_mode.lower() == 'auto':
-            self._autonomy_machine.auto()
-        elif msg.operational_mode.lower() == 'experiment':
-            self._autonomy_machine.experiment()
+        # self.command_pub.publish(msg)
+        payload = msg.operational_mode.lower()
+        self.get_logger().info(f"RECEIVED MESSAGE: {payload}")
+        try:
+            if str(self._autonomy_machine.state).lower() != payload:
+                self._autonomy_machine.trigger(payload)
+            else:
+                self.get_logger().warning(f"Already in {payload} mode!")
+        except AttributeError:
+            self.get_logger().warning(f"Received {payload}: NOT a valid mode!")
 
     def figure_eight_experiment(self):
         """Switch driving angle between both extremes on alternating calls.
@@ -242,9 +241,6 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.straight_param_client.call_async(self.behavior_param_request)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
-
     def update_arc_velocity(self, velocity):
         """Update the velocity parameter of the arc_behavior node by calling its parameter-
         setting service.
@@ -256,8 +252,6 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
 
     def update_arc_steering_angle(self, velocity):
         """Update the steering_angle parameter of the arc_behavior node by calling its parameter-
@@ -270,8 +264,6 @@ class AutonomyManager(Node):
         self.behavior_param_request.parameters.append(parameter)
 
         self.future = self.arc_param_client.call_async(self.behavior_param_request)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
 
     def update_arc_params(self, velocity, steering_angle):
         """Update the velocity AND steering_angle parameters of the arc_behavior node by calling
@@ -312,7 +304,7 @@ class AutonomyMachine:
         self._autonomy_manager.get_logger().info(f"AutonomyMachine is now entering EXPERIMENT mode.")
         self._autonomy_manager.mqtt_client.subscribe(self._autonomy_manager.demo_topic)
         # self._autonomy_manager.update_straight_params(0.5)
-        # self._autonomy_manager._driving_machine.straight()
+        self._autonomy_manager._driving_machine.straight()
         self._autonomy_manager.print_machine("enter_experiment")
         # self._autonomy_manager.timer = self._autonomy_manager.create_timer(
         #     2.7, self._autonomy_manager.figure_eight_experiment
@@ -322,7 +314,7 @@ class AutonomyMachine:
         self._autonomy_manager.get_logger().info(f"AutonomyMachine is now exiting EXPERIMENT mode.")
         self._autonomy_manager.mqtt_client.unsubscribe(self._autonomy_manager.demo_topic)
         # self._autonomy_manager.timer.cancel()
-        # self._autonomy_manager._driving_machine.stop()
+        self._autonomy_manager._driving_machine.stop()
         self._autonomy_manager.print_machine("exit_experiment")
 
 
@@ -345,14 +337,12 @@ class DrivingMachine:
         self._autonomy_manager.behavior_request.enable = True
         self._autonomy_manager.future = self._autonomy_manager.straight_behavior_client.call_async(
             self._autonomy_manager.behavior_request)
-        rclpy.spin_until_future_complete(self._autonomy_manager, self._autonomy_manager.future)
 
     def on_exit_straight(self):
         self._autonomy_manager.get_logger().info(f"DrivingMachine is now exiting STRAIGHT mode.")
         self._autonomy_manager.behavior_request.enable = False
         self._autonomy_manager.future = self._autonomy_manager.straight_behavior_client.call_async(
             self._autonomy_manager.behavior_request)
-        rclpy.spin_until_future_complete(self._autonomy_manager, self._autonomy_manager.future)
 
     # ARC   -------------------------------------
     def on_enter_arc(self):
