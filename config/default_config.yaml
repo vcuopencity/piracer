@@ -9,6 +9,8 @@ car:
                   cmd_bridge_output_topic: 'cmd/out'
             #     string : initial mode for the autonomy state machine      
                   initial_mode: 'experiment'
+            #     string: MQTT topic for spring 2023 demo
+                  demo_topic: '/car1/demo'
       steering_driver:
             ros__parameters:
             #      double : Lower bound in radians for servo to move, default = 0.0
