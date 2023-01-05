@@ -134,4 +134,11 @@ piracer-internal"`
 
 1. Ensure the [environment variables](#environment-variables) have been set on the car. 
 
-1. Running the code on the car: `ros2 launch piracer full_stack.launch.py config_file:="/home/ubuntu/dev_ws/src/piracer_configs-internal/car1_config.yaml"`
+1. Running the code on the car: 
+`ros2 launch piracer full_stack.launch.py config_file:="/home/ubuntu/dev_ws/src/piracer_configs-internal/car1_config.yaml"`
+
+1. Entering the experiment state (making it go forward and enter the following state machine on 'straight' mode): 
+`ros2 topic pub -1 /car1/cmd/in cmd_msgs/msg/Command "{operational_mode: experiment}"`
+
+1. Stopping the vehicle after experiment is completed (by putting it into direct command mode):
+`ros2 topic pub -1 /car1/cmd/in cmd_msgs/msg/Command "{operational_mode: direct}"`
