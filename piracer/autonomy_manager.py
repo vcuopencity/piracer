@@ -23,10 +23,10 @@ class AutonomyManager(Node):
         super().__init__('autonomy_manager')
 
         self._agent_name = self.get_namespace().lstrip('/')
-        self.timer_counter = 0
+        self._timer_counter = 0
         self._direction = True
-        self.debug_machine = False
-        self.client_futures = []
+        self._debug_machine = False
+        self._client_futures = []
 
         self._init_params()
         self._init_pub()
@@ -44,7 +44,7 @@ class AutonomyManager(Node):
         
         self.print_machine("Init")
 
-        if self.debug_machine:
+        if self._debug_machine:
             logging.basicConfig(level=logging.DEBUG)
             # Set transitions' log level to INFO; DEBUG messages will be omitted
             logging.getLogger('transitions').setLevel(logging.INFO)
@@ -179,7 +179,7 @@ class AutonomyManager(Node):
     
     def print_machine(self, info):
         """Print the current state of these machines."""
-        if self.debug_machine:
+        if self._debug_machine:
             self._driving_machine.get_graph().draw(f'driving_machine_{self.print_count}_{info}.png', prog='dot')
             self._autonomy_machine.get_graph().draw(f'autonomy_machine_{self.print_count}_{info}.png', prog='dot')
             self.print_count += 1
@@ -188,12 +188,12 @@ class AutonomyManager(Node):
     def enable_twist(self):
         ack_request = Enable.Request()
         ack_request.enable = True
-        self.client_futures.append(self.enable_twist_client.call_async(ack_request))
+        self._client_futures.append(self.enable_twist_client.call_async(ack_request))
 
     def disable_twist(self):
         ack_request = Enable.Request()
         ack_request.enable = False
-        self.client_futures.append(self.enable_twist_client.call_async(ack_request))
+        self._client_futures.append(self.enable_twist_client.call_async(ack_request))
 
     # Subscriber callbacks ------------------------------------------------------------------------
     def command_callback(self, msg):
@@ -213,8 +213,8 @@ class AutonomyManager(Node):
         """Switch driving angle between both extremes on alternating calls.
         For the best figure-8, use a callback period of 2.7s.
         """
-        self.timer_counter += 1
-        if self.timer_counter % 2 == 0:
+        self._timer_counter += 1
+        if self._timer_counter % 2 == 0:
             self._driving_machine.stop()
             self.update_arc_params(1.2, 25.0)
             self._driving_machine.arc()
@@ -225,8 +225,8 @@ class AutonomyManager(Node):
 
     def straight_experiment(self):
         """Start and stop the vehicle on alternating calls."""
-        self.timer_counter += 1
-        if self.timer_counter % 2 == 0:
+        self._timer_counter += 1
+        if self._timer_counter % 2 == 0:
             self._driving_machine.straight()
         else:
             self._driving_machine.stop()
@@ -241,7 +241,7 @@ class AutonomyManager(Node):
         parameter.value.double_value = velocity
         self.behavior_param_request.parameters.append(parameter)
 
-        self.client_futures.append(self.straight_param_client.call_async(self.behavior_param_request))
+        self._client_futures.append(self.straight_param_client.call_async(self.behavior_param_request))
     def update_arc_velocity(self, velocity):
         """Update the velocity parameter of the arc_behavior node by calling its parameter-
         setting service.
@@ -252,7 +252,7 @@ class AutonomyManager(Node):
         parameter.value.double_value = velocity
         self.behavior_param_request.parameters.append(parameter)
 
-        self.client_futures.append(self.arc_param_client.call_async(self.behavior_param_request))
+        self._client_futures.append(self.arc_param_client.call_async(self.behavior_param_request))
 
     def update_arc_steering_angle(self, velocity):
         """Update the steering_angle parameter of the arc_behavior node by calling its parameter-
@@ -264,7 +264,7 @@ class AutonomyManager(Node):
         parameter.value.double_value = velocity
         self.behavior_param_request.parameters.append(parameter)
 
-        self.client_futures.append(self.arc_param_client.call_async(self.behavior_param_request))
+        self._client_futures.append(self.arc_param_client.call_async(self.behavior_param_request))
 
     def update_arc_params(self, velocity, steering_angle):
         """Update the velocity AND steering_angle parameters of the arc_behavior node by calling
@@ -277,13 +277,13 @@ class AutonomyManager(Node):
         while rclpy.ok():
             rclpy.spin_once(self)
             incomplete_futures=[]
-            for f in self.client_futures:
+            for f in self._client_futures:
                 if f.done():
                     self.get_logger().info(f"Service result: {f.result()}")
                 else:
                     self.get_logger().warn(f"FUTURE INCOMPLETE!")
                     incomplete_futures.append(f)
-            self.client_futures = incomplete_futures
+            self._client_futures = incomplete_futures
 
 
 class AutonomyMachine:
@@ -348,26 +348,26 @@ class DrivingMachine:
     def on_enter_straight(self):
         self._autonomy_manager.get_logger().info(f"DrivingMachine is now entering STRAIGHT mode.")
         self._autonomy_manager.behavior_request.enable = True
-        self._autonomy_manager.client_futures.append(self._autonomy_manager.straight_behavior_client.call_async(
+        self._autonomy_manager._client_futures.append(self._autonomy_manager.straight_behavior_client.call_async(
             self._autonomy_manager.behavior_request))
 
     def on_exit_straight(self):
         self._autonomy_manager.get_logger().info(f"DrivingMachine is now exiting STRAIGHT mode.")
         self._autonomy_manager.behavior_request.enable = False
-        self._autonomy_manager.client_futures.append(self._autonomy_manager.straight_behavior_client.call_async(
+        self._autonomy_manager._client_futures.append(self._autonomy_manager.straight_behavior_client.call_async(
             self._autonomy_manager.behavior_request))
 
     # ARC   -------------------------------------
     def on_enter_arc(self):
         self._autonomy_manager.get_logger().info(f"DrivingMachine is now entering ARC mode.")
         self._autonomy_manager.behavior_request.enable = True
-        self._autonomy_manager.client_futures.append(self._autonomy_manager.arc_behavior_client.call_async(
+        self._autonomy_manager._client_futures.append(self._autonomy_manager.arc_behavior_client.call_async(
             self._autonomy_manager.behavior_request))
 
     def on_exit_arc(self):
         self._autonomy_manager.get_logger().info(f"DrivingMachine is now exiting ARC mode.")
         self._autonomy_manager.behavior_request.enable = False
-        self._autonomy_manager.client_futures.append(self._autonomy_manager.arc_behavior_client.call_async(
+        self._autonomy_manager._client_futures.append(self._autonomy_manager.arc_behavior_client.call_async(
             self._autonomy_manager.behavior_request))
 
 def main():
