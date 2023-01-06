@@ -31,6 +31,8 @@ car:
                   neighbor_list: ['car1', 'car2', 'car3', 'signal1']
             #      double : frequency to report agent's own state, default = 1.0
                   report_frequency: 1.0
+            #      string: topic to receive agent's location message
+                  location_input: 'vive'
       ackermann_controller:
             ros__parameters:
             #      string : input topic for twist messages, default = 'ros_pub_top'
