@@ -7,7 +7,8 @@ from carma_v2x_msgs.msg import BSM
 from nav_msgs.msg import Odometry
 from opencity_utils import state_msgs
 from rclpy.node import Node
-from ros2_message_converter import message_converter
+from rosidl_runtime_py import convert
+from rosidl_runtime_py import set_message
 from traffic_signal_msgs.msg import SignalState
 
 import paho.mqtt.client
@@ -102,7 +103,8 @@ class V2xNode(Node):
     def _update_car_info(self, mqtt_msg, agent_name):
         """Convert MQTT msg to dict, then to ROS message. Store this information in _agent_states under agent_name."""
         dict_msg = json.loads(mqtt_msg.payload.decode('utf-8'))
-        ros_msg = message_converter.convert_dictionary_to_ros_message("carma_v2x_msgs/BSM", dict_msg)
+        ros_msg = BSM()
+        set_message.set_message_fields(ros_msg, dict_msg)
         new_info = state_msgs.CarInfo(latitude=ros_msg.core_data.latitude, 
                                       longitude=ros_msg.core_data.longitude)
         self._agent_states[agent_name] = new_info
@@ -110,7 +112,8 @@ class V2xNode(Node):
     def _update_signal_info(self, mqtt_msg, agent_name):
         """Convert MQTT msg to dict, then to ROS message. Store this information in _agent_states under agent_name."""
         dict_msg = json.loads(mqtt_msg.payload.decode('utf-8'))
-        ros_msg = message_converter.convert_dictionary_to_ros_message("traffic_signal_msgs/SignalState", dict_msg)
+        ros_msg = SignalState()
+        set_message.set_message_fields(ros_msg, dict_msg)
         new_info = state_msgs.SignalInfo(states=ros_msg.states.states, 
                                          x=ros_msg.pose.pose.position.x,
                                          y=ros_msg.pose.pose.position.y)
@@ -143,7 +146,7 @@ class V2xNode(Node):
         state_msg.core_data.latitude = float(this_car_status.latitude)
         state_msg.core_data.longitude = float(this_car_status.longitude)
 
-        state_msg_dict = message_converter.convert_ros_message_to_dictionary(state_msg)
+        state_msg_dict = convert.message_to_ordereddict(state_msg)
         state_msg_byte = json.dumps(state_msg_dict).encode('utf-8')
         self.mqtt_client.publish(f'/{self._agent_name}/{self._output_topic}', state_msg_byte)
 

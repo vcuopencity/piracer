@@ -16,7 +16,6 @@
   <depend>opencity_utils</depend>
   <depend>piracer_msgs</depend>
   <depend>rclcpy</depend>
-  <depend>ros2_message_converter</depend>
   <depend>traffic_signal_msgs</depend>
   <depend>transitions</depend>
 
