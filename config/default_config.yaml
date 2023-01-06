@@ -67,3 +67,9 @@ car:
                   imu_topic: "imu"
             #      double: rate for imu msg to be published in HZ, default = 50.0
                   imu_rate: 50.0
+      vive_driver:
+            ros__parameters:
+            #     string: input topic to sub to VIVE data
+                  input_topic: '/vive_odom/car1'
+            #     string: output topic to publish internally
+                  output_topic: 'vive'
