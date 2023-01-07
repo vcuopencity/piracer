@@ -88,5 +88,12 @@ def generate_launch_description():
             executable='v2x_node',
             name='v2x_node',
             parameters=[LaunchConfiguration('config_file')]
+        ),
+        Node(
+            package='piracer',
+            namespace=agent_name,
+            executable='vive_driver',
+            name='vive_driver',
+            parameters=[LaunchConfiguration('config_file')]
         )
     ])

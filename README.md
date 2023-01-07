@@ -43,6 +43,7 @@ anything, but for practical purposes it should never need to be launched by itse
         
         full_stack --> v2x_node([v2x_node])
         full_stack --> autonomy_manager([autonomy_manager])
+        full_stack --> vive_driver([vive_driver])
 
         full_stack -->|launch_bridge|control_bridge(control_bridge)
     
@@ -50,7 +51,7 @@ anything, but for practical purposes it should never need to be launched by itse
         classDef bridge_launch_file fill:#DAE8FC,stroke:#6C8EBF,color:black;
         classDef nodes fill:#FFFFFF,stroke:#000000,color:black;
         
-        class display_driver,power_monitor_driver,steering_driver,throttle_driver,ackermann_controller,teleop_controller,arc_behavior,straight_behavior,v2x_node,autonomy_manager nodes;
+        class display_driver,power_monitor_driver,steering_driver,throttle_driver,ackermann_controller,teleop_controller,arc_behavior,straight_behavior,v2x_node,autonomy_manager,vive_driver nodes;
         class ackermann_control,hardware_nodes,open_loop_control,teleop_control,full_stack launch_file;
         class twist_bridge,control_bridge bridge_launch_file;
 ```
