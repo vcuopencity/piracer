@@ -200,7 +200,7 @@ class AutonomyManager(Node):
         """Responding to a received command."""
         # self.command_pub.publish(msg)
         payload = msg.operational_mode.lower()
-        self.get_logger().info(f"RECEIVED MESSAGE: {payload}")
+        self.get_logger().debug(f"RECEIVED MESSAGE: {payload}")
         try:
             if str(self._autonomy_machine.state).lower() != payload:
                 self._autonomy_machine.trigger(payload)
