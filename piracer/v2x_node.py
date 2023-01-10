@@ -150,7 +150,7 @@ class V2xNode(Node):
         state_msg_byte = json.dumps(state_msg_dict).encode('utf-8')
         self.mqtt_client.publish(f'/{self._agent_name}/{self._output_topic}', state_msg_byte)
 
-        self.get_logger().info(str(self._agent_states))
+        self.get_logger().debug(str(self._agent_states))
 
 
 def main():
