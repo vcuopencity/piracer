@@ -8,11 +8,19 @@
     <joint name="imu" type="fixed">
       <parent link="base_link"/>
       <child link="imu_link"/>
-      <origin xyz="0.275 0 0.165"/>  //HERE
+      <origin xyz="0.125 0 0.015"/> 
     </joint>
 
     <link name="imu_link">
     </link>
 
+    <joint name="tracker" type="fixed">
+      <parent link="base_link"/>
+      <child link="tracker_link"/>
+      <origin xyz="0.13 0 0.093"/> 
+    </joint>
+
+    <link name="tracker_link">
+    </link>
 
   </robot>
