@@ -19,12 +19,9 @@ def generate_launch_description():
     """
     default_config = join(get_package_share_directory('piracer'),
                       'config', 'default_config.yaml')
-    ekf_config = join(get_package_share_directory('piracer'),
-                      'config', 'ekf_config.yaml')
     piracer_launch_directory = get_package_share_directory('piracer')
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
     launch_bridge = LaunchConfiguration('launch_bridge')
-
 
     agent_name = "car" + environ['CAR_ID']
 
@@ -40,6 +37,7 @@ def generate_launch_description():
             description='Agent configuration .yaml file.'
         ),
         IncludeLaunchDescription(
+
             PythonLaunchDescriptionSource([piracer_launch_directory, '/ackermann_control.launch.py']),
             launch_arguments={
                 'agent_name': agent_name,
@@ -68,19 +66,6 @@ def generate_launch_description():
             launch_arguments={
                 'agent_name': agent_name,
                 'config_file' : LaunchConfiguration('config_file')
-            }.items(),
-        ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([piracer_launch_directory, '/localization.launch.py']),
-            launch_arguments={
-                'agent_name': agent_name,
-                'config_file' : LaunchConfiguration('config_file')
-            }.items(),
-        ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([piracer_launch_directory, '/localization.launch.py']),
-            launch_arguments={
-                'agent_name': LaunchConfiguration('agent_name')
             }.items(),
         ),
         IncludeLaunchDescription(
