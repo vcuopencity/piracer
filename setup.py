@@ -7,7 +7,7 @@ package_name = 'piracer'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='0.1.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -34,7 +34,8 @@ setup(
             'autonomy_manager = piracer.autonomy_manager:main',
             'v2x_node = piracer.v2x_node:main',
             'straight_behavior = piracer.straight_behavior:main',
-            'arc_behavior = piracer.arc_behavior:main'
+            'arc_behavior = piracer.arc_behavior:main',
+            'vive_driver = piracer.vive_driver:main'
         ],
     },
 )

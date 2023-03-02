@@ -13,6 +13,8 @@ from adafruit_motor.motor import DCMotor
 
 
 class ThrottleDriver(Node):
+    """Sub to /agent/throttle and output throttle commands to PCA9685 DC Motor via I2C while
+    ensuring the commands are within min_throttle and max_throttle constraints."""
     def __init__(self):
         super(ThrottleDriver, self).__init__('throttle_driver')
 

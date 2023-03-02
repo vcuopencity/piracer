@@ -14,29 +14,27 @@ from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    """Launch hardware_nodes.launch and the ackermann_control node for ackermann drive control of the piracer. Intended
-    for use with the ackermann_drive.launch configuration of the mqtt_bridge package.
+    """ Launching the PiRacer for the demo with IMU bridge and joy_teleop control.
     """
     default_config = join(get_package_share_directory('piracer'),
                       'config', 'default_config.yaml')
-    piracer_launch_directory = get_package_share_directory('piracer')
     bridge_launch_directory = get_package_share_directory('mqtt_bridge')
-
-    launch_hardware = LaunchConfiguration('launch_hardware')
+    piracer_launch_directory = get_package_share_directory('piracer')
     launch_bridge = LaunchConfiguration('launch_bridge')
+    launch_teleop = LaunchConfiguration('launch_teleop')
 
     agent_name = "car" + environ['CAR_ID']
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            'launch_hardware',
-            default_value='true',
-            description='Determines if hardware_nodes.launch is called.'
-        ),
-        DeclareLaunchArgument(
             'launch_bridge',
             default_value='true',
-            description='Determines if ackermann_drive_bridge.launch is called from the mqtt_bridge package.'
+            description='Determines if appropriate bridge files are launched from the mqtt_bridge package.'
+        ),
+        DeclareLaunchArgument(
+            'launch_teleop',
+            default_value='true',
+            description='Determines if teleop_control is launched.'
         ),
         DeclareLaunchArgument(
             'config_file',
@@ -44,25 +42,18 @@ def generate_launch_description():
             description='Agent configuration .yaml file.'
         ),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([piracer_launch_directory, '/hardware_nodes.launch.py']),
+            PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/imu_bridge.launch.py']),
             launch_arguments={
                 'agent_name': agent_name,
                 'config_file' : LaunchConfiguration('config_file')
             }.items(),
-            condition=IfCondition(launch_hardware)
-        ),
-        Node(
-            package='piracer',
-            namespace=agent_name,
-            executable='ackermann_controller',
-            name='ackermann_controller',
-            parameters=[LaunchConfiguration('config_file')],
+            condition=IfCondition(launch_bridge)
         ),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([bridge_launch_directory, '/launch/twist_bridge.launch.py']),
+            PythonLaunchDescriptionSource([piracer_launch_directory, '/teleop_control.launch.py']),
             launch_arguments={
                 'agent_name': agent_name
             }.items(),
-            condition=IfCondition(launch_bridge)
+            condition=IfCondition(launch_teleop)
         )
     ])

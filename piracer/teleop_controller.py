@@ -6,6 +6,7 @@ from piracer_msgs.msg import SteeringAngle, Throttle
 
 
 class TeleopController(Node):
+    """Sub to /agent/joy and output /agent/throttle and /agent/angle commands."""
     def __init__(self):
         super(TeleopController, self).__init__('teleop_controller')
 
@@ -28,7 +29,7 @@ class TeleopController(Node):
         self.throttle_pub.publish(throttle_msg)
 
         angle_msg = SteeringAngle()
-        angle_msg.radian = - msg.axes[3] * 90
+        angle_msg.radian = - msg.axes[3] * 1.309
         self.angle_pub.publish(angle_msg)
 
 

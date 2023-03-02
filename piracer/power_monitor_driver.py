@@ -9,6 +9,7 @@ from adafruit_ina219 import INA219
 
 
 class PowerMonitorDriver(Node):
+    """Pub SystemPower messages from INA219 DC current sensor over I2C to /agent/current."""
     def __init__(self):
         super(PowerMonitorDriver, self).__init__('power_monitor_driver')
 
