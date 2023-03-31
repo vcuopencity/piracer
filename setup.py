@@ -35,7 +35,8 @@ setup(
             'v2x_node = piracer.v2x_node:main',
             'straight_behavior = piracer.straight_behavior:main',
             'arc_behavior = piracer.arc_behavior:main',
-            'vive_driver = piracer.vive_driver:main'
+            'vive_driver = piracer.vive_driver:main',
+            'motion_controller = piracer.motion_controller:main'
         ],
     },
 )
